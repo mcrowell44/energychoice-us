@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.vercel/
+.env
+.env.local
+.env.*.local
+data/tier1-prospects.json
+data/commercial-loe-leads.json
+data/uploaded-bills/
+*.tsbuildinfo

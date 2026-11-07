@@ -1,0 +1,32 @@
+{
+  "name": "energychoice-us",
+  "private": true,
+  "version": "1.1.0",
+  "description": "Energy Choice US (energychoice.us) — Live Daily Tier 1 Pricing (1–1,999 kWh/mo) & Commercial Wholesale LOE Desk (2,000+ kWh/mo)",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "export-seed": "npx tsx scripts/exportLiveTier1Seed.ts",
+    "pulse": "npx tsx scripts/postMarketPulse.ts",
+    "qa": "npx tsx scripts/verifyQaChecklist.ts",
+    "deploy": "npx tsx scripts/deployToVercel.ts"
+  },
+  "dependencies": {
+    "lucide-react": "^0.468.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.0",
+    "@types/node": "^22.10.2",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react": "^4.3.4",
+    "tailwindcss": "^4.1.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.7"
+  }
+}
