@@ -230,14 +230,14 @@ export const CommercialLoeIntake: React.FC<CommercialLoeIntakeProps> = ({
 
   if (submittedRecord) {
     return (
-      <section className="mt-10 rounded-3xl border border-emerald-500/40 bg-neutral-900 p-8 text-white shadow-2xl space-y-5">
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-neutral-800 pb-5">
+      <section className="mt-10 rounded-3xl border border-cyan-400/50 bg-[#031129] p-8 text-white shadow-2xl space-y-5">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#0e2d5c] pb-5">
           <div className="flex items-center gap-3">
-            <div className="h-12 w-12 rounded-2xl bg-emerald-500/20 text-emerald-300 flex items-center justify-center">
+            <div className="h-12 w-12 rounded-2xl bg-cyan-400/20 text-[#00e5ff] flex items-center justify-center">
               <CheckCircle2 className="h-7 w-7" />
             </div>
             <div>
-              <span className="text-xs font-mono uppercase tracking-wider text-emerald-400">
+              <span className="text-xs font-mono uppercase tracking-wider text-[#00e5ff]">
                 {isRealtimeLock
                   ? "Utility Bill Verified • LOE & Rate Lock Agreement Executed"
                   : isReserved24HrQuote
@@ -253,29 +253,29 @@ export const CommercialLoeIntake: React.FC<CommercialLoeIntakeProps> = ({
               </h3>
             </div>
           </div>
-          <div className="rounded-xl border border-emerald-500/30 bg-neutral-950 px-3.5 py-2 text-xs font-mono text-emerald-300">
+          <div className="rounded-xl border border-cyan-400/35 bg-[#010a1a] px-3.5 py-2 text-xs font-mono text-[#00e5ff]">
             Confirmation: {submittedRecord.confirmationId}
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs font-mono">
-          <div className="rounded-xl border border-neutral-800 bg-neutral-950 p-4">
-            <div className="text-neutral-500">ENTITY &amp; SIGNER</div>
+          <div className="rounded-xl border border-[#0e2d5c] bg-[#010a1a] p-4">
+            <div className="text-slate-400">ENTITY &amp; SIGNER</div>
             <div className="text-white font-semibold mt-1">
               {submittedRecord.businessName}
             </div>
-            <div className="text-neutral-400">
+            <div className="text-slate-300">
               {submittedRecord.authorizedSignerName} (
               {submittedRecord.signerTitle})
             </div>
           </div>
-          <div className="rounded-xl border border-neutral-800 bg-neutral-950 p-4">
-            <div className="text-neutral-500">USAGE TIER &amp; TERM</div>
-            <div className="text-amber-300 font-semibold mt-1">
+          <div className="rounded-xl border border-[#0e2d5c] bg-[#010a1a] p-4">
+            <div className="text-slate-400">USAGE TIER &amp; TERM</div>
+            <div className="text-sky-300 font-semibold mt-1">
               {submittedRecord.monthlyKwh.toLocaleString()} kWh/mo (
               {submittedRecord.tierRangeLabel})
             </div>
-            <div className="text-neutral-400">
+            <div className="text-slate-300">
               {isRealtimeLock
                 ? `Locked Offer (${selectedPlan?.term_months} Mos)`
                 : isReserved24HrQuote
@@ -283,12 +283,12 @@ export const CommercialLoeIntake: React.FC<CommercialLoeIntakeProps> = ({
                   : "Guaranteed 24-Hour Turnaround"}
             </div>
           </div>
-          <div className="rounded-xl border border-neutral-800 bg-neutral-950 p-4">
-            <div className="text-neutral-500">BILL, LOE &amp; SIGNATURE</div>
-            <div className="text-emerald-300 font-semibold mt-1 truncate">
+          <div className="rounded-xl border border-[#0e2d5c] bg-[#010a1a] p-4">
+            <div className="text-slate-400">BILL, LOE &amp; SIGNATURE</div>
+            <div className="text-[#00e5ff] font-semibold mt-1 truncate">
               {submittedRecord.billFileName}
             </div>
-            <div className="text-neutral-400">
+            <div className="text-slate-300">
               {isReserved24HrQuote
                 ? "Quote Reserved & LOE Signed ✓"
                 : "LOE & Agreement Signed ✓"}
@@ -296,11 +296,11 @@ export const CommercialLoeIntake: React.FC<CommercialLoeIntakeProps> = ({
           </div>
         </div>
 
-        <p className="text-sm text-neutral-300 leading-relaxed">
+        <p className="text-sm text-slate-200 leading-relaxed">
           {isRealtimeLock && selectedPlan ? (
             <>
               Your {selectedPlan.term_months}-month fixed rate lock of{" "}
-              <span className="font-mono text-emerald-400 font-bold">
+              <span className="font-mono text-[#00e5ff] font-bold">
                 ${(selectedPlan.rate_per_kwh_cents / 100).toFixed(4)}/kWh (
                 {selectedPlan.rate_per_kwh_cents.toFixed(2)}¢/kWh)
               </span>{" "}
@@ -316,7 +316,7 @@ export const CommercialLoeIntake: React.FC<CommercialLoeIntakeProps> = ({
           ) : isReserved24HrQuote && selectedPlan ? (
             <>
               Your live rate quote of{" "}
-              <span className="font-mono text-amber-300 font-bold">
+              <span className="font-mono text-sky-300 font-bold">
                 ${(selectedPlan.rate_per_kwh_cents / 100).toFixed(4)}/kWh (
                 {selectedPlan.rate_per_kwh_cents.toFixed(2)}¢/kWh)
               </span>{" "}
@@ -326,7 +326,7 @@ export const CommercialLoeIntake: React.FC<CommercialLoeIntakeProps> = ({
                 reserved for 24-hour meter &amp; load verification
               </strong>{" "}
               from your uploaded utility bill. Once verified, your{" "}
-              <strong className="text-emerald-300">
+              <strong className="text-[#00e5ff]">
                 final supplier signup documents will be emailed directly to{" "}
                 <span className="font-mono text-white">
                   {submittedRecord.contactEmail}
@@ -348,22 +348,22 @@ export const CommercialLoeIntake: React.FC<CommercialLoeIntakeProps> = ({
               <span className="font-mono text-white">
                 {submittedRecord.contactEmail}
               </span>{" "}
-              within <strong className="text-amber-300">24 hours</strong>.
+              within <strong className="text-sky-300">24 hours</strong>.
             </>
           )}
         </p>
 
-        <p className="text-xs font-mono text-neutral-400">
+        <p className="text-xs font-mono text-slate-300">
           Procurement &amp; Admin Desk Notification:{" "}
           <a
             href={`mailto:${ADMIN_NOTIFICATION_EMAIL}`}
-            className="text-emerald-400 hover:text-emerald-300 underline underline-offset-2"
+            className="text-[#00e5ff] hover:text-cyan-300 underline underline-offset-2"
           >
             {ADMIN_NOTIFICATION_EMAIL}
           </a>
         </p>
 
-        <p className="text-[11px] font-mono text-neutral-500">
+        <p className="text-[11px] font-mono text-slate-400">
           {STANDARD_DISCLOSURE}
         </p>
       </section>
@@ -372,19 +372,19 @@ export const CommercialLoeIntake: React.FC<CommercialLoeIntakeProps> = ({
 
   return (
     <section
-      className={`mt-10 rounded-3xl border bg-neutral-900 p-6 sm:p-10 text-white shadow-2xl ${
-        isRealtimeLock ? "border-emerald-500/40" : "border-amber-500/30"
+      className={`mt-10 rounded-3xl border bg-[#031129] p-6 sm:p-10 text-white shadow-2xl ${
+        isRealtimeLock ? "border-cyan-400/45" : "border-sky-400/45"
       }`}
     >
       {/* Header Banner */}
-      <div className="flex flex-wrap items-start justify-between gap-4 border-b border-neutral-800 pb-6 mb-6">
+      <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[#0e2d5c] pb-6 mb-6">
         <div className="space-y-1.5">
           <div className="flex flex-wrap items-center gap-2">
             <span
               className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-mono ${
                 isRealtimeLock
-                  ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300"
-                  : "bg-amber-500/10 border-amber-500/30 text-amber-300"
+                  ? "bg-cyan-400/10 border-cyan-400/35 text-[#00e5ff]"
+                  : "bg-sky-500/15 border-sky-400/35 text-sky-300"
               }`}
             >
               {isRealtimeLock ? (
@@ -402,8 +402,8 @@ export const CommercialLoeIntake: React.FC<CommercialLoeIntakeProps> = ({
             </span>
 
             {!isRealtimeLock && commercialTierLabel && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-neutral-800 px-3 py-1 text-xs font-mono text-neutral-300">
-                <Building2 className="h-3.5 w-3.5 text-amber-400" />
+              <span className="inline-flex items-center gap-1 rounded-full bg-[#051838] border border-[#0e2d5c] px-3 py-1 text-xs font-mono text-slate-200">
+                <Building2 className="h-3.5 w-3.5 text-sky-400" />
                 {commercialTierLabel}
               </span>
             )}
@@ -420,7 +420,7 @@ export const CommercialLoeIntake: React.FC<CommercialLoeIntakeProps> = ({
                   ? `Step 2 of 2: Reserve $${(selectedPlan.rate_per_kwh_cents / 100).toFixed(4)}/kWh Quote, LOE & Sign`
                   : "Step 2 of 2: LOE, Agreement Execution & Sign (24-Hr Quote)"}
           </h2>
-          <p className="text-xs sm:text-sm text-neutral-400 font-mono">
+          <p className="text-xs sm:text-sm text-slate-300 font-mono">
             {territory} • ZIP {zipCode} • Volume: {kwh.toLocaleString()} kWh/mo
             ({annualizedKwh.toLocaleString()} kWh/yr)
           </p>
@@ -428,13 +428,13 @@ export const CommercialLoeIntake: React.FC<CommercialLoeIntakeProps> = ({
 
         {hasSelectedQuote && selectedPlan ? (
           <div
-            className={`rounded-2xl border bg-neutral-950 px-5 py-3 text-right ${
-              isRealtimeLock ? "border-emerald-500/30" : "border-amber-500/40"
+            className={`rounded-2xl border bg-[#010a1a] px-5 py-3 text-right ${
+              isRealtimeLock ? "border-cyan-400/40" : "border-sky-400/45"
             }`}
           >
             <div
               className={`text-[10px] font-mono uppercase tracking-wider ${
-                isRealtimeLock ? "text-emerald-400" : "text-amber-400"
+                isRealtimeLock ? "text-[#00e5ff]" : "text-sky-300"
               }`}
             >
               {isRealtimeLock
@@ -443,13 +443,13 @@ export const CommercialLoeIntake: React.FC<CommercialLoeIntakeProps> = ({
             </div>
             <div
               className={`text-2xl font-extrabold font-mono mt-0.5 ${
-                isRealtimeLock ? "text-emerald-400" : "text-amber-300"
+                isRealtimeLock ? "text-[#00e5ff]" : "text-sky-300"
               }`}
             >
               ${(selectedPlan.rate_per_kwh_cents / 100).toFixed(4)}{" "}
-              <span className="text-xs text-neutral-400">/ kWh</span>
+              <span className="text-xs text-slate-400">/ kWh</span>
             </div>
-            <div className="text-[11px] text-neutral-400 font-mono">
+            <div className="text-[11px] text-slate-300 font-mono">
               ({selectedPlan.rate_per_kwh_cents.toFixed(2)}¢ / kWh) • Est. $
               {selectedPlan.est_monthly_bill.toLocaleString("en-US", {
                 minimumFractionDigits: 2,
@@ -459,15 +459,15 @@ export const CommercialLoeIntake: React.FC<CommercialLoeIntakeProps> = ({
             </div>
           </div>
         ) : (
-          <div className="rounded-2xl border border-amber-500/30 bg-neutral-950 px-5 py-3 text-right">
-            <div className="text-[10px] font-mono uppercase tracking-wider text-amber-400">
+          <div className="rounded-2xl border border-sky-400/35 bg-[#010a1a] px-5 py-3 text-right">
+            <div className="text-[10px] font-mono uppercase tracking-wider text-sky-300">
               Quote Turnaround SLA
             </div>
-            <div className="text-lg font-extrabold font-mono text-amber-300 mt-0.5">
+            <div className="text-lg font-extrabold font-mono text-sky-300 mt-0.5">
               Within 24 Hours
             </div>
             {indicativeRateRange && (
-              <div className="text-[11px] text-neutral-400 font-mono">
+              <div className="text-[11px] text-slate-300 font-mono">
                 Desk Benchmark: {indicativeRateRange}
               </div>
             )}
@@ -482,14 +482,14 @@ export const CommercialLoeIntake: React.FC<CommercialLoeIntakeProps> = ({
           onClick={() => setCurrentStep("BILL_UPLOAD")}
           className={`rounded-2xl border p-3.5 text-left transition-all flex items-center justify-between gap-2 cursor-pointer ${
             currentStep === "BILL_UPLOAD"
-              ? "border-emerald-500 bg-emerald-500/15 text-white"
+              ? "border-[#00e5ff] bg-cyan-400/15 text-white shadow-[0_0_20px_rgba(0,229,255,0.18)]"
               : billFile
-                ? "border-emerald-500/40 bg-neutral-950 text-emerald-300"
-                : "border-neutral-800 bg-neutral-950 text-neutral-400"
+                ? "border-cyan-400/40 bg-[#010a1a] text-[#00e5ff]"
+                : "border-[#0e2d5c] bg-[#010a1a] text-slate-400"
           }`}
         >
           <div>
-            <div className="text-[10px] font-mono uppercase tracking-wider text-emerald-400">
+            <div className="text-[10px] font-mono uppercase tracking-wider text-[#00e5ff]">
               Step 1 • Required Gate
             </div>
             <div className="text-xs sm:text-sm font-bold mt-0.5">
@@ -497,9 +497,9 @@ export const CommercialLoeIntake: React.FC<CommercialLoeIntakeProps> = ({
             </div>
           </div>
           {billFile ? (
-            <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0" />
+            <CheckCircle2 className="h-5 w-5 text-[#00e5ff] shrink-0" />
           ) : (
-            <FileUp className="h-5 w-5 text-emerald-400 shrink-0" />
+            <FileUp className="h-5 w-5 text-[#00e5ff] shrink-0" />
           )}
         </button>
 
@@ -511,10 +511,10 @@ export const CommercialLoeIntake: React.FC<CommercialLoeIntakeProps> = ({
           }}
           className={`rounded-2xl border p-3.5 text-left transition-all flex items-center justify-between gap-2 ${
             currentStep === "LOE_AND_SIGN"
-              ? "border-emerald-500 bg-emerald-500/15 text-white cursor-pointer"
+              ? "border-[#00e5ff] bg-cyan-400/15 text-white shadow-[0_0_20px_rgba(0,229,255,0.18)] cursor-pointer"
               : billFile
-                ? "border-neutral-700 bg-neutral-950 text-neutral-200 hover:border-emerald-500/40 cursor-pointer"
-                : "border-neutral-800 bg-neutral-950/60 text-neutral-500 cursor-not-allowed"
+                ? "border-cyan-400/35 bg-[#010a1a] text-slate-200 hover:border-[#00e5ff] cursor-pointer"
+                : "border-[#0e2d5c] bg-[#010a1a]/60 text-slate-500 cursor-not-allowed"
           }`}
         >
           <div>
@@ -526,9 +526,9 @@ export const CommercialLoeIntake: React.FC<CommercialLoeIntakeProps> = ({
             </div>
           </div>
           {billFile ? (
-            <ShieldCheck className="h-5 w-5 text-emerald-400 shrink-0" />
+            <ShieldCheck className="h-5 w-5 text-[#00e5ff] shrink-0" />
           ) : (
-            <Lock className="h-4 w-4 text-neutral-500 shrink-0" />
+            <Lock className="h-4 w-4 text-slate-500 shrink-0" />
           )}
         </button>
       </div>
@@ -553,8 +553,8 @@ export const CommercialLoeIntake: React.FC<CommercialLoeIntakeProps> = ({
       {/* ===================================================================== */}
       {currentStep === "BILL_UPLOAD" && (
         <div className="space-y-6">
-          <div className="rounded-2xl border border-neutral-800 bg-neutral-950/80 p-4 text-xs text-neutral-300 font-mono leading-relaxed">
-            <strong className="text-emerald-400">
+          <div className="rounded-2xl border border-[#0e2d5c] bg-[#010a1a]/90 p-4 text-xs text-slate-300 font-mono leading-relaxed">
+            <strong className="text-[#00e5ff]">
               Utility Bill Required to Proceed:
             </strong>{" "}
             Please upload a copy of your most recent electric utility bill (PDF
@@ -577,34 +577,34 @@ export const CommercialLoeIntake: React.FC<CommercialLoeIntakeProps> = ({
             }}
             className={`rounded-3xl border-2 border-dashed p-8 sm:p-12 text-center cursor-pointer transition-all ${
               billFile
-                ? "border-emerald-500 bg-emerald-500/10"
+                ? "border-[#00e5ff] bg-cyan-400/10"
                 : isDragging
-                  ? "border-emerald-400 bg-emerald-500/10"
-                  : "border-neutral-700 bg-neutral-950 hover:border-emerald-400/60"
+                  ? "border-[#00e5ff] bg-cyan-400/10"
+                  : "border-[#0e2d5c] bg-[#010a1a] hover:border-cyan-400/60"
             }`}
           >
             {billFile ? (
               <div className="flex flex-col items-center gap-2">
-                <div className="h-14 w-14 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                <div className="h-14 w-14 rounded-2xl bg-cyan-400/20 text-[#00e5ff] flex items-center justify-center">
                   <FileCheck2 className="h-8 w-8" />
                 </div>
                 <div className="text-base sm:text-lg font-extrabold text-white">
                   {billFile.name}
                 </div>
-                <div className="text-xs font-mono text-emerald-300">
+                <div className="text-xs font-mono text-[#00e5ff]">
                   {(billFile.size / 1024).toFixed(1)} KB attached &amp; verified
                   • Click or drop another file to replace
                 </div>
               </div>
             ) : (
               <div className="flex flex-col items-center gap-3">
-                <div className="h-14 w-14 rounded-2xl bg-neutral-900 border border-neutral-800 text-emerald-400 flex items-center justify-center">
+                <div className="h-14 w-14 rounded-2xl bg-[#051838] border border-cyan-400/30 text-[#00e5ff] flex items-center justify-center">
                   <FileUp className="h-8 w-8" />
                 </div>
                 <div className="text-base sm:text-lg font-bold text-white">
                   Click or Drag &amp; Drop Your Latest Electric Utility Bill *
                 </div>
-                <div className="text-xs font-mono text-neutral-400 max-w-lg">
+                <div className="text-xs font-mono text-slate-400 max-w-lg">
                   Accepts PDF, JPG, PNG, or WebP (Max 3.2 MB • All pages
                   preferred). Uploading your bill unlocks Step 2 (LOE, Agreement
                   Execution &amp; Sign).
@@ -617,10 +617,8 @@ export const CommercialLoeIntake: React.FC<CommercialLoeIntakeProps> = ({
             type="button"
             disabled={!billFile}
             onClick={handleProceedToLoeStep}
-            className={`w-full rounded-xl py-4 px-6 font-extrabold text-neutral-950 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer ${
-              isRealtimeLock
-                ? "bg-emerald-500 hover:bg-emerald-400 shadow-emerald-500/20"
-                : "bg-amber-400 hover:bg-amber-300 shadow-amber-500/20"
+            className={`w-full rounded-xl py-4 px-6 font-extrabold disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 cursor-pointer ${
+              isRealtimeLock ? "ec-btn-cyan" : "ec-btn-cobalt"
             }`}
           >
             {billFile ? (
@@ -638,7 +636,7 @@ export const CommercialLoeIntake: React.FC<CommercialLoeIntakeProps> = ({
             )}
           </button>
 
-          <p className="text-center text-[11px] font-mono text-neutral-500">
+          <p className="text-center text-[11px] font-mono text-slate-400">
             {STANDARD_DISCLOSURE}
           </p>
         </div>
@@ -650,8 +648,8 @@ export const CommercialLoeIntake: React.FC<CommercialLoeIntakeProps> = ({
       {currentStep === "LOE_AND_SIGN" && billFile && (
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Verified Bill Banner */}
-          <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 flex flex-wrap items-center justify-between gap-2 text-xs font-mono">
-            <span className="inline-flex items-center gap-2 text-emerald-300">
+          <div className="rounded-2xl border border-cyan-400/35 bg-cyan-400/10 px-4 py-3 flex flex-wrap items-center justify-between gap-2 text-xs font-mono">
+            <span className="inline-flex items-center gap-2 text-[#00e5ff]">
               <FileCheck2 className="h-4 w-4 shrink-0" />
               <span>
                 Step 1 Verified Bill: <strong>{billFile.name}</strong> (
@@ -661,7 +659,7 @@ export const CommercialLoeIntake: React.FC<CommercialLoeIntakeProps> = ({
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="text-emerald-300 hover:text-white underline underline-offset-2 cursor-pointer"
+              className="text-[#00e5ff] hover:text-white underline underline-offset-2 cursor-pointer"
             >
               Replace Utility Bill
             </button>
@@ -671,11 +669,11 @@ export const CommercialLoeIntake: React.FC<CommercialLoeIntakeProps> = ({
           {!hasSelectedQuote && (
             <div>
               <div className="flex flex-wrap items-center justify-between gap-2 mb-2.5">
-                <h3 className="text-xs font-mono uppercase tracking-wider text-amber-400 inline-flex items-center gap-1.5">
+                <h3 className="text-xs font-mono uppercase tracking-wider text-sky-300 inline-flex items-center gap-1.5">
                   <Calendar className="h-3.5 w-3.5" />
                   Contract Term Quotes to Include (18 – 72 Months)
                 </h3>
-                <span className="text-[11px] font-mono text-neutral-400">
+                <span className="text-[11px] font-mono text-slate-400">
                   Click terms to toggle (at least one required)
                 </span>
               </div>
@@ -700,12 +698,12 @@ export const CommercialLoeIntake: React.FC<CommercialLoeIntakeProps> = ({
                       }}
                       className={`rounded-xl border py-2.5 px-2 text-center font-mono text-xs transition-all cursor-pointer ${
                         active
-                          ? "border-amber-400 bg-amber-500/20 text-white font-bold"
-                          : "border-neutral-800 bg-neutral-950 text-neutral-500 hover:border-neutral-700"
+                          ? "border-sky-400 bg-sky-500/20 text-white font-bold"
+                          : "border-[#0e2d5c] bg-[#010a1a] text-slate-400 hover:border-sky-400/40"
                       }`}
                     >
                       <div>{term} Months</div>
-                      <div className="text-[10px] text-neutral-400">
+                      <div className="text-[10px] text-slate-400">
                         {active ? "Included ✓" : "Click to add"}
                       </div>
                     </button>
@@ -717,12 +715,12 @@ export const CommercialLoeIntake: React.FC<CommercialLoeIntakeProps> = ({
 
           {/* Account & Authorized Signer Info */}
           <div>
-            <h3 className="text-xs font-mono uppercase tracking-wider text-emerald-400 mb-3">
+            <h3 className="text-xs font-mono uppercase tracking-wider text-[#00e5ff] mb-3">
               1. Business / Account &amp; Authorized Signer Details
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-mono text-neutral-400 mb-1.5">
+                <label className="block text-xs font-mono text-slate-300 mb-1.5">
                   Business / Account Legal Name *
                 </label>
                 <input
@@ -731,12 +729,12 @@ export const CommercialLoeIntake: React.FC<CommercialLoeIntakeProps> = ({
                   placeholder="e.g. Apex Logistics LLC"
                   value={businessName}
                   onChange={(e) => setBusinessName(e.target.value)}
-                  className="w-full rounded-xl border border-neutral-800 bg-neutral-950 px-4 py-3 text-sm text-white focus:border-emerald-500 focus:outline-none"
+                  className="w-full rounded-xl border border-[#0e2d5c] bg-[#010a1a] px-4 py-3 text-sm text-white focus:border-[#00e5ff] focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-mono text-neutral-400 mb-1.5">
+                <label className="block text-xs font-mono text-slate-300 mb-1.5">
                   Current Electric Supplier (Optional)
                 </label>
                 <input
@@ -744,12 +742,12 @@ export const CommercialLoeIntake: React.FC<CommercialLoeIntakeProps> = ({
                   placeholder="e.g. TXU, Reliant, Constellation, Unknown"
                   value={currentProvider}
                   onChange={(e) => setCurrentProvider(e.target.value)}
-                  className="w-full rounded-xl border border-neutral-800 bg-neutral-950 px-4 py-3 text-sm text-white focus:border-emerald-500 focus:outline-none"
+                  className="w-full rounded-xl border border-[#0e2d5c] bg-[#010a1a] px-4 py-3 text-sm text-white focus:border-[#00e5ff] focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-mono text-neutral-400 mb-1.5">
+                <label className="block text-xs font-mono text-slate-300 mb-1.5">
                   Authorized Signers Name *
                 </label>
                 <input
@@ -758,12 +756,12 @@ export const CommercialLoeIntake: React.FC<CommercialLoeIntakeProps> = ({
                   placeholder="Signers Name"
                   value={authorizedSignerName}
                   onChange={(e) => setAuthorizedSignerName(e.target.value)}
-                  className="w-full rounded-xl border border-neutral-800 bg-neutral-950 px-4 py-3 text-sm text-white focus:border-emerald-500 focus:outline-none"
+                  className="w-full rounded-xl border border-[#0e2d5c] bg-[#010a1a] px-4 py-3 text-sm text-white focus:border-[#00e5ff] focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-mono text-neutral-400 mb-1.5">
+                <label className="block text-xs font-mono text-slate-300 mb-1.5">
                   Title / Role *
                 </label>
                 <input
@@ -772,12 +770,12 @@ export const CommercialLoeIntake: React.FC<CommercialLoeIntakeProps> = ({
                   placeholder="e.g. Owner, Managing Partner, Authorized Account Holder"
                   value={signerTitle}
                   onChange={(e) => setSignerTitle(e.target.value)}
-                  className="w-full rounded-xl border border-neutral-800 bg-neutral-950 px-4 py-3 text-sm text-white focus:border-emerald-500 focus:outline-none"
+                  className="w-full rounded-xl border border-[#0e2d5c] bg-[#010a1a] px-4 py-3 text-sm text-white focus:border-[#00e5ff] focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-mono text-neutral-400 mb-1.5">
+                <label className="block text-xs font-mono text-slate-300 mb-1.5">
                   Email Address *
                 </label>
                 <input
@@ -786,12 +784,12 @@ export const CommercialLoeIntake: React.FC<CommercialLoeIntakeProps> = ({
                   placeholder="decisionmaker@company.com"
                   value={contactEmail}
                   onChange={(e) => setContactEmail(e.target.value)}
-                  className="w-full rounded-xl border border-neutral-800 bg-neutral-950 px-4 py-3 text-sm text-white focus:border-emerald-500 focus:outline-none"
+                  className="w-full rounded-xl border border-[#0e2d5c] bg-[#010a1a] px-4 py-3 text-sm text-white focus:border-[#00e5ff] focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-mono text-neutral-400 mb-1.5">
+                <label className="block text-xs font-mono text-slate-300 mb-1.5">
                   Direct Phone Number *
                 </label>
                 <input
@@ -800,7 +798,7 @@ export const CommercialLoeIntake: React.FC<CommercialLoeIntakeProps> = ({
                   placeholder="(214) 555-0140"
                   value={contactPhone}
                   onChange={(e) => setContactPhone(e.target.value)}
-                  className="w-full rounded-xl border border-neutral-800 bg-neutral-950 px-4 py-3 text-sm text-white focus:border-emerald-500 focus:outline-none"
+                  className="w-full rounded-xl border border-[#0e2d5c] bg-[#010a1a] px-4 py-3 text-sm text-white focus:border-[#00e5ff] focus:outline-none"
                 />
               </div>
             </div>
@@ -808,11 +806,11 @@ export const CommercialLoeIntake: React.FC<CommercialLoeIntakeProps> = ({
 
           {/* Letter of Exclusivity (LOE) & Supply Agreement Execution */}
           <div>
-            <h3 className="text-xs font-mono uppercase tracking-wider text-emerald-400 mb-3">
+            <h3 className="text-xs font-mono uppercase tracking-wider text-[#00e5ff] mb-3">
               2. Binding Letter of Exclusivity (LOE) &amp; Agreement Execution *
             </h3>
-            <div className="h-52 overflow-y-scroll rounded-xl border border-neutral-800 bg-neutral-950 p-4 text-xs text-neutral-400 font-mono leading-relaxed space-y-2 mb-4">
-              <p className="font-bold text-neutral-200">
+            <div className="h-52 overflow-y-scroll rounded-xl border border-[#0e2d5c] bg-[#010a1a] p-4 text-xs text-slate-300 font-mono leading-relaxed space-y-2 mb-4">
+              <p className="font-bold text-[#00e5ff]">
                 LETTER OF EXCLUSIVITY (LOE) &amp; SUPPLY AGREEMENT EXECUTION
                 AUTHORIZATION
               </p>
@@ -840,7 +838,7 @@ export const CommercialLoeIntake: React.FC<CommercialLoeIntakeProps> = ({
                 3. NOTICES &amp; ADMINISTRATION: All agreement confirmations,
                 meter verifications, and written notices are administered
                 through{" "}
-                <span className="text-neutral-200">
+                <span className="text-white">
                   {ADMIN_NOTIFICATION_EMAIL}
                 </span>
                 .
@@ -853,9 +851,9 @@ export const CommercialLoeIntake: React.FC<CommercialLoeIntakeProps> = ({
                 type="checkbox"
                 checked={loeSigned}
                 onChange={(e) => setLoeSigned(e.target.checked)}
-                className="mt-1 h-4 w-4 rounded border-neutral-700 bg-neutral-800 text-emerald-500 focus:ring-0"
+                className="mt-1 h-4 w-4 rounded border-[#0e2d5c] bg-[#051838] text-[#00e5ff] focus:ring-0"
               />
-              <span className="text-xs text-neutral-300 leading-relaxed">
+              <span className="text-xs text-slate-200 leading-relaxed">
                 I certify that I am an authorized representative of{" "}
                 <strong>{businessName || "the named account"}</strong>, I have
                 uploaded our recent utility bill, and I agree that my electronic
@@ -874,7 +872,7 @@ export const CommercialLoeIntake: React.FC<CommercialLoeIntakeProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="sm:col-span-2">
-                <label className="block text-[11px] font-mono uppercase text-neutral-400 mb-1">
+                <label className="block text-[11px] font-mono uppercase text-slate-300 mb-1">
                   Electronic Signature (Type Full Name to Sign) *
                 </label>
                 <input
@@ -883,11 +881,11 @@ export const CommercialLoeIntake: React.FC<CommercialLoeIntakeProps> = ({
                   placeholder="Signers Name"
                   value={loeSignature}
                   onChange={(e) => setLoeSignature(e.target.value)}
-                  className="w-full rounded-xl border border-neutral-800 bg-neutral-950 px-4 py-3 text-sm font-serif italic text-emerald-200 focus:border-emerald-500 focus:outline-none"
+                  className="w-full rounded-xl border border-[#0e2d5c] bg-[#010a1a] px-4 py-3 text-sm font-serif italic text-[#00e5ff] focus:border-[#00e5ff] focus:outline-none"
                 />
               </div>
               <div>
-                <label className="block text-[11px] font-mono uppercase text-neutral-400 mb-1">
+                <label className="block text-[11px] font-mono uppercase text-slate-300 mb-1">
                   Initials
                 </label>
                 <input
@@ -900,7 +898,7 @@ export const CommercialLoeIntake: React.FC<CommercialLoeIntakeProps> = ({
                       e.target.value.replace(/[^a-zA-Z]/g, "").toUpperCase()
                     )
                   }
-                  className="w-full rounded-xl border border-neutral-800 bg-neutral-950 px-4 py-3 text-sm font-mono text-center text-white focus:border-emerald-500 focus:outline-none"
+                  className="w-full rounded-xl border border-[#0e2d5c] bg-[#010a1a] px-4 py-3 text-sm font-mono text-center text-white focus:border-[#00e5ff] focus:outline-none"
                 />
               </div>
             </div>
@@ -919,10 +917,8 @@ export const CommercialLoeIntake: React.FC<CommercialLoeIntakeProps> = ({
               !loeSigned ||
               !loeSignature
             }
-            className={`w-full rounded-xl py-4 px-6 font-extrabold text-neutral-950 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer ${
-              isRealtimeLock
-                ? "bg-emerald-500 hover:bg-emerald-400 shadow-emerald-500/20"
-                : "bg-amber-400 hover:bg-amber-300 shadow-amber-500/20"
+            className={`w-full rounded-xl py-4 px-6 font-extrabold disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 cursor-pointer ${
+              isRealtimeLock ? "ec-btn-cyan" : "ec-btn-cobalt"
             }`}
           >
             <ShieldCheck className="h-5 w-5" />

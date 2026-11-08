@@ -1,1 +1,98 @@
 @import "tailwindcss";
+
+:root {
+  --ec-navy-950: #010a1a;
+  --ec-navy-900: #031129;
+  --ec-navy-850: #051838;
+  --ec-navy-800: #08204a;
+  --ec-border-navy: #0e2d5c;
+  --ec-cyan-bright: #00e5ff;
+  --ec-cyan-glow: rgba(0, 229, 255, 0.28);
+  --ec-cobalt-blue: #0077ff;
+  --ec-cobalt-deep: #0051cc;
+  color-scheme: dark;
+}
+
+html,
+body {
+  background-color: var(--ec-navy-950);
+  color: #ffffff;
+  background-image:
+    radial-gradient(circle at 14% 18%, rgba(0, 229, 255, 0.1) 0%, transparent 36%),
+    radial-gradient(circle at 86% 12%, rgba(0, 119, 255, 0.12) 0%, transparent 40%),
+    linear-gradient(180deg, #010a1a 0%, #020e24 55%, #010918 100%);
+  background-attachment: fixed;
+}
+
+/* Logo-inspired glowing perspective grid & circuit surface for Hero and Featured panels */
+.ec-hero-surface {
+  background-color: #020d22;
+  background-image:
+    radial-gradient(circle at 18% 45%, rgba(0, 229, 255, 0.16) 0%, rgba(0, 119, 255, 0.06) 32%, transparent 60%),
+    radial-gradient(circle at 82% 22%, rgba(0, 119, 255, 0.15) 0%, transparent 48%),
+    linear-gradient(180deg, rgba(2, 13, 34, 0.94) 0%, rgba(3, 18, 44, 0.96) 65%, rgba(2, 15, 38, 0.98) 100%);
+  box-shadow:
+    0 24px 60px -15px rgba(0, 8, 24, 0.85),
+    0 0 40px -10px rgba(0, 229, 255, 0.15),
+    inset 0 1px 0 0 rgba(0, 229, 255, 0.22);
+}
+
+.ec-perspective-grid {
+  background-size: 38px 38px;
+  background-image:
+    linear-gradient(to right, rgba(0, 229, 255, 0.12) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 119, 255, 0.14) 1px, transparent 1px);
+  mask-image: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.25) 55%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.25) 55%, transparent 100%);
+}
+
+/* Signature dual angled cyan & cobalt chevrons from the top/bottom corners of the logo */
+.ec-chevron-cyan {
+  background: linear-gradient(135deg, #00f0ff 0%, #00c8ff 100%);
+  transform: skewX(-32deg);
+  box-shadow: 0 0 18px rgba(0, 229, 255, 0.45);
+}
+
+.ec-chevron-blue {
+  background: linear-gradient(135deg, #0088ff 0%, #0051cc 100%);
+  transform: skewX(-32deg);
+  box-shadow: 0 0 18px rgba(0, 119, 255, 0.4);
+}
+
+/* Primary Electric Cyan CTA Button (Logo Primary Accent) */
+.ec-btn-cyan {
+  background: linear-gradient(90deg, #00e5ff 0%, #00b8ff 50%, #0088ff 100%);
+  color: #010a1a;
+  box-shadow: 0 10px 28px -6px rgba(0, 229, 255, 0.4);
+}
+.ec-btn-cyan:hover:not(:disabled) {
+  background: linear-gradient(90deg, #33ecff 0%, #1ac4ff 50%, #1a96ff 100%);
+  box-shadow: 0 12px 32px -4px rgba(0, 229, 255, 0.55);
+}
+
+/* Secondary Electric Cobalt-Cyan CTA Button (Logo Secondary Accent for 24-Hr C&I Reserve) */
+.ec-btn-cobalt {
+  background: linear-gradient(90deg, #38bdf8 0%, #0088ff 55%, #2563eb 100%);
+  color: #ffffff;
+  box-shadow: 0 10px 28px -6px rgba(0, 136, 255, 0.45);
+}
+.ec-btn-cobalt:hover:not(:disabled) {
+  background: linear-gradient(90deg, #7dd3fc 0%, #1a96ff 55%, #3b82f6 100%);
+  box-shadow: 0 12px 32px -4px rgba(0, 136, 255, 0.6);
+}
+
+/* Custom Dark Navy Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #010a1a;
+}
+::-webkit-scrollbar-thumb {
+  background: #0e2d5c;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #00b8ff;
+}

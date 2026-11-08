@@ -4,8 +4,8 @@
   "description": "Automated commercial & industrial energy procurement across 18â€“72 month terms.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#010c1e",
-  "theme_color": "#010c1e",
+  "background_color": "#010a1a",
+  "theme_color": "#010a1a",
   "icons": [
     {
       "src": "/favicon-48x48.png",

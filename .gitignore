@@ -4,7 +4,9 @@ dist/
 .env
 .env.local
 .env.*.local
-data/tier1-prospects.json
-data/commercial-loe-leads.json
-data/uploaded-bills/
+data/
 *.tsbuildinfo
+*.pdf
+*.webp
+agent control
+ghl_social_posts.csv

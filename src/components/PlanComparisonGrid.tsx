@@ -66,11 +66,11 @@ export const PlanComparisonGrid: React.FC<PlanComparisonGridProps> = ({
   return (
     <section className="mt-10 space-y-6">
       {/* Header Banner */}
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-neutral-800 bg-neutral-900/70 px-6 py-4">
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-[#0e2d5c] bg-[#031129]/90 px-6 py-4 shadow-xl">
         <div>
           <div
             className={`flex items-center gap-2 text-xs font-mono uppercase tracking-wider ${
-              isReserve24Hr ? "text-amber-400" : "text-emerald-400"
+              isReserve24Hr ? "text-sky-300" : "text-[#00e5ff]"
             }`}
           >
             {isCommercialMatrix ? (
@@ -94,9 +94,9 @@ export const PlanComparisonGrid: React.FC<PlanComparisonGridProps> = ({
                 : `${activeTerm}-Month Competing Provider Quotes — ZIP ${zipCode}`}
           </h2>
           {territory && (
-            <p className="text-xs text-neutral-400 font-mono mt-0.5">
+            <p className="text-xs text-slate-400 font-mono mt-0.5">
               {territory} • Volume:{" "}
-              <span className="text-emerald-300 font-semibold">
+              <span className="text-[#00e5ff] font-semibold">
                 {kwh.toLocaleString()} kWh/month
               </span>{" "}
               ({(kwh * 12).toLocaleString()} kWh/yr •{" "}
@@ -104,7 +104,7 @@ export const PlanComparisonGrid: React.FC<PlanComparisonGridProps> = ({
             </p>
           )}
           {isReserve24Hr && (
-            <p className="text-xs text-amber-300 font-mono mt-1.5">
+            <p className="text-xs text-sky-300 font-mono mt-1.5">
               Select a live rate quote below to reserve it for 24-hour meter
               verification — final signup documents will be emailed directly to
               you.
@@ -116,14 +116,14 @@ export const PlanComparisonGrid: React.FC<PlanComparisonGridProps> = ({
           <span
             className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-mono ${
               isReserve24Hr
-                ? "border-amber-500/30 bg-amber-500/10 text-amber-300"
-                : "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
+                ? "border-sky-400/35 bg-sky-500/15 text-sky-200"
+                : "border-cyan-400/35 bg-cyan-400/10 text-cyan-200"
             }`}
           >
             {engine === "live-daily-feed" ||
             engine === "live-commercial-matrix" ? (
               <>
-                <Radio className="h-3.5 w-3.5 animate-pulse" />
+                <Radio className="h-3.5 w-3.5 animate-pulse text-[#00e5ff]" />
                 {isReserve24Hr
                   ? "Live C&I Curve • 24-Hr Verify"
                   : isCommercialMatrix
@@ -132,13 +132,13 @@ export const PlanComparisonGrid: React.FC<PlanComparisonGridProps> = ({
               </>
             ) : (
               <>
-                <ShieldCheck className="h-3.5 w-3.5" />
+                <ShieldCheck className="h-3.5 w-3.5 text-[#00e5ff]" />
                 Daily Calibrated Multi-Term Seed
               </>
             )}
           </span>
           {fetchedAt && (
-            <p className="text-[10px] font-mono text-neutral-500">
+            <p className="text-[10px] font-mono text-slate-400">
               {displayedPlans.length} Quotes @ {activeTerm} Mos • Seeded{" "}
               {new Date(fetchedAt).toLocaleDateString()}
             </p>
@@ -147,13 +147,13 @@ export const PlanComparisonGrid: React.FC<PlanComparisonGridProps> = ({
       </div>
 
       {/* Interactive Real-Time Contract Term Bar (18, 24, 36, 48, 60, 72 Months) */}
-      <div className="rounded-2xl border border-neutral-800 bg-neutral-900/60 p-4">
+      <div className="rounded-2xl border border-[#0e2d5c] bg-[#031129]/80 p-4 shadow-lg">
         <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-          <span className="inline-flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-emerald-400">
+          <span className="inline-flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-[#00e5ff]">
             <Calendar className="h-3.5 w-3.5" />
             Select Contract Term — Pricing Updates Live by Term (18 – 72 Months)
           </span>
-          <span className="text-[11px] font-mono text-neutral-400">
+          <span className="text-[11px] font-mono text-slate-400">
             Showing {displayedPlans.length} competing {activeTerm}-month quotes
           </span>
         </div>
@@ -171,8 +171,8 @@ export const PlanComparisonGrid: React.FC<PlanComparisonGridProps> = ({
                 onClick={() => onChangeTerm(term)}
                 className={`rounded-xl border p-3 text-left transition-all cursor-pointer ${
                   isActive
-                    ? "border-emerald-500 bg-emerald-500/15 text-white shadow-lg shadow-emerald-500/10"
-                    : "border-neutral-800 bg-neutral-950/80 text-neutral-400 hover:border-neutral-700 hover:text-neutral-200"
+                    ? "border-[#00e5ff] bg-cyan-400/15 text-white shadow-[0_0_20px_rgba(0,229,255,0.2)]"
+                    : "border-[#0e2d5c] bg-[#010a1a]/85 text-slate-400 hover:border-cyan-400/40 hover:text-white"
                 }`}
               >
                 <div className="flex items-center justify-between gap-1">
@@ -180,19 +180,19 @@ export const PlanComparisonGrid: React.FC<PlanComparisonGridProps> = ({
                     {term} Months
                   </span>
                   {isActive && (
-                    <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                    <span className="h-2 w-2 rounded-full bg-[#00e5ff] shadow-[0_0_8px_#00e5ff]" />
                   )}
                 </div>
                 {leadPlan ? (
                   <>
                     <div
                       className={`text-sm font-mono font-bold mt-1 ${
-                        isActive ? "text-emerald-300" : "text-emerald-400/80"
+                        isActive ? "text-[#00e5ff]" : "text-cyan-300/85"
                       }`}
                     >
                       ${(leadPlan.rate_per_kwh_cents / 100).toFixed(4)}
                     </div>
-                    <div className="text-[10px] font-mono text-neutral-500 truncate">
+                    <div className="text-[10px] font-mono text-slate-400 truncate">
                       {leadPlan.rate_per_kwh_cents.toFixed(2)}¢ • $
                       {leadPlan.est_monthly_bill.toLocaleString("en-US", {
                         maximumFractionDigits: 0,
@@ -201,7 +201,7 @@ export const PlanComparisonGrid: React.FC<PlanComparisonGridProps> = ({
                     </div>
                   </>
                 ) : (
-                  <div className="text-[11px] font-mono text-neutral-500 mt-1">
+                  <div className="text-[11px] font-mono text-slate-400 mt-1">
                     {(term / 12).toFixed(term % 12 === 0 ? 0 : 1)}-Year Lock
                   </div>
                 )}
@@ -239,26 +239,26 @@ export const PlanComparisonGrid: React.FC<PlanComparisonGridProps> = ({
               key={plan.plan_id}
               className={`relative flex flex-col justify-between rounded-3xl border p-5 transition-all ${
                 isSelected
-                  ? "border-emerald-500 bg-neutral-900 shadow-xl shadow-emerald-500/10"
-                  : "border-neutral-800 bg-neutral-900/80 hover:border-neutral-700"
+                  ? "border-[#00e5ff] bg-[#051838] shadow-[0_0_28px_rgba(0,229,255,0.22)]"
+                  : "border-[#0e2d5c] bg-[#031129]/90 hover:border-cyan-400/50"
               }`}
             >
               <div>
                 <div className="flex items-center justify-between gap-1.5 mb-3">
                   {idx === 0 ? (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-0.5 text-[10px] font-semibold text-emerald-300">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-cyan-400/15 border border-cyan-400/35 px-2.5 py-0.5 text-[10px] font-semibold text-[#00e5ff]">
                       Lowest {plan.term_months}-Mo Rate
                     </span>
                   ) : plan.renewable_pct >= 100 ? (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-teal-500/15 border border-teal-500/30 px-2.5 py-0.5 text-[10px] font-semibold text-teal-300">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-sky-500/20 border border-sky-400/35 px-2.5 py-0.5 text-[10px] font-semibold text-sky-300">
                       100% Renewable
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-neutral-800 px-2.5 py-0.5 text-[10px] font-mono text-neutral-300">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-[#051838] border border-[#0e2d5c] px-2.5 py-0.5 text-[10px] font-mono text-slate-300">
                       Fixed Supply Lock
                     </span>
                   )}
-                  <span className="rounded-lg border border-emerald-500/30 bg-neutral-950 px-2 py-0.5 text-[11px] font-mono font-bold text-emerald-300">
+                  <span className="rounded-lg border border-cyan-400/35 bg-[#010a1a] px-2 py-0.5 text-[11px] font-mono font-bold text-[#00e5ff]">
                     {plan.term_months} Mos
                   </span>
                 </div>
@@ -266,23 +266,23 @@ export const PlanComparisonGrid: React.FC<PlanComparisonGridProps> = ({
                 <h3 className="text-base font-bold text-white leading-snug">
                   {plan.provider}
                 </h3>
-                <p className="text-xs text-neutral-400 mt-0.5 line-clamp-1">
+                <p className="text-xs text-slate-400 mt-0.5 line-clamp-1">
                   {plan.plan_name}
                 </p>
 
-                <div className="my-3.5 border-y border-neutral-800 py-3.5">
+                <div className="my-3.5 border-y border-[#0e2d5c] py-3.5">
                   <div className="flex items-baseline gap-1.5">
-                    <span className="text-3xl font-extrabold font-mono text-emerald-400">
+                    <span className="text-3xl font-extrabold font-mono text-[#00e5ff]">
                       ${(plan.rate_per_kwh_cents / 100).toFixed(4)}
                     </span>
-                    <span className="text-xs text-neutral-400 font-mono">
+                    <span className="text-xs text-slate-400 font-mono">
                       / kWh
                     </span>
                   </div>
-                  <p className="text-[11px] text-emerald-300/80 font-mono mt-0.5">
+                  <p className="text-[11px] text-cyan-300/85 font-mono mt-0.5">
                     ({plan.rate_per_kwh_cents.toFixed(2)}¢ / kWh)
                   </p>
-                  <p className="text-xs text-neutral-300 mt-1 font-mono">
+                  <p className="text-xs text-slate-300 mt-1 font-mono">
                     Est. Monthly:{" "}
                     <span className="text-white font-semibold">
                       $
@@ -293,7 +293,7 @@ export const PlanComparisonGrid: React.FC<PlanComparisonGridProps> = ({
                       /mo
                     </span>
                   </p>
-                  <p className="text-[10px] text-neutral-500 font-mono mt-0.5">
+                  <p className="text-[10px] text-slate-400 font-mono mt-0.5">
                     {plan.term_months}-Mo Est. Total: $
                     {totalContractEst.toLocaleString("en-US", {
                       maximumFractionDigits: 0,
@@ -303,7 +303,7 @@ export const PlanComparisonGrid: React.FC<PlanComparisonGridProps> = ({
 
                 {/* Sub-Tier / Matrix Band Schedule */}
                 <div className="mb-3.5">
-                  <div className="text-[10px] font-mono uppercase tracking-wider text-neutral-500 mb-1.5">
+                  <div className="text-[10px] font-mono uppercase tracking-wider text-slate-400 mb-1.5">
                     {isCommercialMatrix
                       ? "Matrix Sub-Bands ($/kWh)"
                       : "Usage Sub-Tiers ($/kWh)"}
@@ -314,11 +314,11 @@ export const PlanComparisonGrid: React.FC<PlanComparisonGridProps> = ({
                         key={col.label}
                         className={`rounded-lg border px-1 py-1 ${
                           col.is_active
-                            ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-300"
-                            : "border-neutral-800 bg-neutral-950 text-neutral-400"
+                            ? "border-cyan-400/50 bg-cyan-400/15 text-[#00e5ff]"
+                            : "border-[#0e2d5c] bg-[#010a1a] text-slate-400"
                         }`}
                       >
-                        <div className="text-[9px] text-neutral-500 truncate">
+                        <div className="text-[9px] text-slate-400 truncate">
                           {col.label}
                         </div>
                         <div className="font-semibold">
@@ -329,13 +329,13 @@ export const PlanComparisonGrid: React.FC<PlanComparisonGridProps> = ({
                   </div>
                 </div>
 
-                <ul className="space-y-1 text-xs text-neutral-400 mb-5">
+                <ul className="space-y-1 text-xs text-slate-400 mb-5">
                   <li className="flex items-center justify-between">
                     <span className="inline-flex items-center gap-1">
-                      <Leaf className="h-3 w-3 text-emerald-400" />
+                      <Leaf className="h-3 w-3 text-[#00e5ff]" />
                       Renewable
                     </span>
-                    <span className="font-mono text-neutral-200">
+                    <span className="font-mono text-slate-200">
                       {plan.renewable_pct}%
                     </span>
                   </li>
@@ -347,7 +347,7 @@ export const PlanComparisonGrid: React.FC<PlanComparisonGridProps> = ({
                   </li>
                   <li className="flex items-center justify-between">
                     <span>Early Exit Fee</span>
-                    <span className="font-mono text-neutral-200">
+                    <span className="font-mono text-slate-200">
                       ${plan.cancellation_fee}
                     </span>
                   </li>
@@ -357,14 +357,12 @@ export const PlanComparisonGrid: React.FC<PlanComparisonGridProps> = ({
               <button
                 type="button"
                 onClick={() => onSelectPlan(plan)}
-                className={`w-full rounded-xl py-3 px-3.5 text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                className={`w-full rounded-xl py-3 px-3.5 text-xs font-extrabold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                   isSelected
-                    ? isReserve24Hr
-                      ? "bg-amber-300 text-neutral-950"
-                      : "bg-emerald-400 text-neutral-950"
+                    ? "bg-[#00e5ff] text-[#010a1a] shadow-[0_0_20px_rgba(0,229,255,0.45)]"
                     : isReserve24Hr
-                      ? "bg-amber-400 text-neutral-950 hover:bg-amber-300 shadow-md shadow-amber-500/15"
-                      : "bg-emerald-500 text-neutral-950 hover:bg-emerald-400 shadow-md shadow-emerald-500/15"
+                      ? "ec-btn-cobalt"
+                      : "ec-btn-cyan"
                 }`}
               >
                 {isSelected ? (
@@ -385,7 +383,7 @@ export const PlanComparisonGrid: React.FC<PlanComparisonGridProps> = ({
         })}
       </div>
 
-      <p className="text-center text-[11px] text-neutral-500 font-mono px-4">
+      <p className="text-center text-[11px] text-slate-400 font-mono px-4">
         {STANDARD_DISCLOSURE}
       </p>
     </section>

@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { Clock, Info, MapPin, Radio, Zap } from "lucide-react";
+import { Clock, Info, MapPin, Radio } from "lucide-react";
 import { IntakeHero } from "./components/IntakeHero";
 import { PlanComparisonGrid } from "./components/PlanComparisonGrid";
 import { CommercialLoeIntake } from "./components/CommercialLoeIntake";
@@ -121,60 +121,70 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-neutral-950 text-white">
+    <div className="min-h-screen flex flex-col bg-[#010a1a] text-white">
+      {/* Top Signature Cyan-to-Cobalt Accent Strip */}
+      <div className="h-1 w-full bg-gradient-to-r from-[#00e5ff] via-[#0088ff] to-[#0051cc]" />
+
       {/* Header */}
-      <header className="border-b border-neutral-900 bg-neutral-950/90 backdrop-blur sticky top-0 z-30">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
-            <div className="h-8 w-8 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-              <Zap className="h-4 w-4" />
-            </div>
+      <header className="border-b border-[#0e2d5c]/80 bg-[#010a1a]/92 backdrop-blur-md sticky top-0 z-30">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3.5 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <img
+              src="/apple-touch-icon.png"
+              alt="Energy Choice US Lightning Emblem"
+              className="h-10 w-10 rounded-xl border border-cyan-400/40 shadow-[0_0_18px_rgba(0,229,255,0.3)] object-cover"
+            />
             <div>
-              <span className="font-extrabold tracking-tight text-white">
-                energychoice<span className="text-emerald-400">.us</span>
-              </span>
-              <span className="hidden sm:inline-block ml-2 text-[11px] font-mono text-neutral-500">
-                18 – 72 MO TERMS
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="font-extrabold tracking-wider text-sm sm:text-base text-[#00e5ff] uppercase">
+                  ENERGY CHOICE US
+                </span>
+                <span className="hidden sm:inline-block rounded-md border border-cyan-400/25 bg-[#051838] px-2 py-0.5 text-[10px] font-mono text-cyan-300">
+                  18 – 72 MO TERMS
+                </span>
+              </div>
+              <div className="text-[11px] text-slate-300 font-medium tracking-tight">
+                Access Real <span className="text-[#00e5ff] font-bold">Market</span> Commercial Energy Rates
+              </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <span className="hidden md:inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-[11px] font-mono text-emerald-300">
-              <Radio className="h-3 w-3" />
+          <div className="flex items-center gap-2.5">
+            <span className="hidden md:inline-flex items-center gap-1.5 rounded-full border border-cyan-400/35 bg-cyan-400/10 px-3 py-1 text-[11px] font-mono text-cyan-300">
+              <Radio className="h-3 w-3 text-[#00e5ff]" />
               Real-Time: 1 – 49,999 kWh (18–72m)
             </span>
-            <span className="hidden lg:inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-[11px] font-mono text-amber-300">
-              <Clock className="h-3 w-3" />
+            <span className="hidden lg:inline-flex items-center gap-1.5 rounded-full border border-sky-400/35 bg-sky-500/15 px-3 py-1 text-[11px] font-mono text-sky-200">
+              <Clock className="h-3 w-3 text-sky-400" />
               Live Reserve + 24-Hr Verify: 50k – 3M kWh
             </span>
             <a
               href="#texas-deregulated-cities"
-              className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-neutral-800 bg-neutral-900 hover:border-emerald-500/40 px-3 py-1 text-xs text-neutral-300 transition-colors"
+              className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-[#0e2d5c] bg-[#031129] hover:border-cyan-400/50 px-3 py-1 text-xs text-slate-200 transition-colors"
             >
-              <MapPin className="h-3.5 w-3.5 text-emerald-400" />
+              <MapPin className="h-3.5 w-3.5 text-[#00e5ff]" />
               Texas Cities
             </a>
             <button
               type="button"
               onClick={() => setShowDisclosureCard((v) => !v)}
-              className="inline-flex items-center gap-1.5 rounded-full border border-neutral-800 bg-neutral-900 hover:border-emerald-500/40 px-3 py-1 text-xs text-neutral-300 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 rounded-full border border-[#0e2d5c] bg-[#031129] hover:border-cyan-400/50 px-3 py-1 text-xs text-slate-200 transition-colors cursor-pointer"
             >
-              <Info className="h-3.5 w-3.5 text-emerald-400" />
+              <Info className="h-3.5 w-3.5 text-[#00e5ff]" />
               Platform Operations
             </button>
           </div>
         </div>
 
         {showDisclosureCard && (
-          <div className="border-t border-neutral-900 bg-neutral-900/95 px-4 py-3">
-            <div className="max-w-4xl mx-auto text-xs text-emerald-300 font-mono text-center space-y-1">
+          <div className="border-t border-[#0e2d5c]/80 bg-[#031129]/95 px-4 py-3">
+            <div className="max-w-4xl mx-auto text-xs text-cyan-300 font-mono text-center space-y-1">
               <div>“{STANDARD_DISCLOSURE}”</div>
-              <div className="text-neutral-400">
+              <div className="text-slate-400">
                 Admin &amp; Notification Desk:{" "}
                 <a
                   href={`mailto:${ADMIN_NOTIFICATION_EMAIL}`}
-                  className="text-emerald-300 underline underline-offset-2"
+                  className="text-[#00e5ff] underline underline-offset-2"
                 >
                   {ADMIN_NOTIFICATION_EMAIL}
                 </a>
@@ -244,33 +254,33 @@ export const App: React.FC = () => {
 
         {/* Captured Prospects & Executed LOEs Session Ledger */}
         {capturedRecords.length > 0 && (
-          <section className="mt-10 rounded-2xl border border-neutral-800 bg-neutral-900/50 p-5">
-            <h4 className="text-xs font-mono uppercase tracking-wider text-neutral-400 mb-3">
+          <section className="mt-10 rounded-2xl border border-[#0e2d5c] bg-[#031129]/80 p-5">
+            <h4 className="text-xs font-mono uppercase tracking-wider text-cyan-300 mb-3">
               Captured Prospects &amp; Executed LOEs (Session Pipeline)
             </h4>
             <div className="space-y-2">
               {capturedRecords.map((rec, i) => (
                 <div
                   key={`${rec.confirmationId}-${i}`}
-                  className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-neutral-800 bg-neutral-950 px-4 py-2.5 text-xs font-mono"
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[#0e2d5c] bg-[#010a1a] px-4 py-2.5 text-xs font-mono"
                 >
                   <span
                     className={
                       rec.flow === "CUSTOM_24HR_LOE"
-                        ? "text-amber-300 font-semibold"
-                        : "text-emerald-400 font-semibold"
+                        ? "text-sky-300 font-semibold"
+                        : "text-[#00e5ff] font-semibold"
                     }
                   >
                     {rec.confirmationId}
                   </span>
                   {rec.flow === "TIER1_1_1999_KWH" ? (
-                    <span className="text-neutral-300">
+                    <span className="text-slate-200">
                       Tier 1 ({rec.termMonths}m) •{" "}
                       {rec.allocatedKwh.toLocaleString()} kWh/mo @{" "}
                       {rec.rateCents.toFixed(2)}¢ ({rec.provider})
                     </span>
                   ) : rec.flow === "TIER2_REALTIME_LOE" ? (
-                    <span className="text-neutral-300">
+                    <span className="text-slate-200">
                       Rate Lock ({rec.selectedTermMonths}m) •{" "}
                       {rec.businessName} • {rec.monthlyKwh.toLocaleString()}{" "}
                       kWh/mo @ $
@@ -278,7 +288,7 @@ export const App: React.FC = () => {
                       {rec.selectedProvider})
                     </span>
                   ) : rec.selectedProvider && rec.selectedRateCents ? (
-                    <span className="text-neutral-300">
+                    <span className="text-slate-200">
                       Reserved Quote ({rec.selectedTermMonths}m • 24-Hr Verify)
                       • {rec.businessName} • {rec.monthlyKwh.toLocaleString()}{" "}
                       kWh/mo @ $
@@ -286,7 +296,7 @@ export const App: React.FC = () => {
                       {rec.selectedProvider})
                     </span>
                   ) : (
-                    <span className="text-neutral-300">
+                    <span className="text-slate-200">
                       24-Hr Quote ({rec.tierRangeLabel} •{" "}
                       {(rec.requestedTerms || [18, 24, 36, 48, 60, 72]).join(
                         "/"
@@ -294,7 +304,7 @@ export const App: React.FC = () => {
                       m) • {rec.businessName}
                     </span>
                   )}
-                  <span className="text-neutral-500">
+                  <span className="text-slate-400">
                     {rec.contactEmail} • {rec.contactPhone}
                   </span>
                 </div>

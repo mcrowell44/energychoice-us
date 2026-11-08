@@ -87,14 +87,14 @@ export const EmbeddedContractViewer: React.FC<AgreementProps> = ({
 
   if (capturedRecord) {
     return (
-      <div className="rounded-3xl border border-emerald-500/40 bg-neutral-900 p-6 sm:p-8 text-white space-y-5 mt-8 shadow-2xl">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-neutral-800 pb-5">
+      <div className="rounded-3xl border border-cyan-400/45 bg-[#031129] p-6 sm:p-8 text-white space-y-5 mt-8 shadow-2xl">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#0e2d5c] pb-5">
           <div className="flex items-center gap-3">
-            <div className="h-12 w-12 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+            <div className="h-12 w-12 rounded-2xl bg-cyan-400/20 text-[#00e5ff] flex items-center justify-center shrink-0">
               <CheckCircle2 className="h-7 w-7" />
             </div>
             <div>
-              <span className="text-xs font-mono text-emerald-400 uppercase tracking-wider">
+              <span className="text-xs font-mono text-[#00e5ff] uppercase tracking-wider">
                 Tier 1 Rate Lock Request Registered ({plan.term_months} Months)
               </span>
               <h3 className="text-xl sm:text-2xl font-bold text-white">
@@ -102,14 +102,14 @@ export const EmbeddedContractViewer: React.FC<AgreementProps> = ({
               </h3>
             </div>
           </div>
-          <div className="rounded-xl border border-emerald-500/30 bg-neutral-950 px-3.5 py-2 text-xs font-mono text-emerald-300 self-start sm:self-auto">
+          <div className="rounded-xl border border-cyan-400/35 bg-[#010a1a] px-3.5 py-2 text-xs font-mono text-[#00e5ff] self-start sm:self-auto">
             Confirmation: {capturedRecord.confirmationId}
           </div>
         </div>
 
-        <p className="text-sm text-neutral-300 leading-relaxed">
+        <p className="text-sm text-slate-200 leading-relaxed">
           Your {plan.term_months}-month fixed rate selection of{" "}
-          <span className="text-emerald-400 font-mono font-bold">
+          <span className="text-[#00e5ff] font-mono font-bold">
             ${dollarRate}/kWh ({plan.rate_per_kwh_cents.toFixed(2)}¢/kWh)
           </span>{" "}
           — est.{" "}
@@ -128,20 +128,20 @@ export const EmbeddedContractViewer: React.FC<AgreementProps> = ({
           shortly.
         </p>
 
-        <div className="rounded-xl border border-neutral-800 bg-neutral-950 px-4 py-3 text-xs font-mono text-neutral-300 flex flex-wrap items-center justify-between gap-2">
+        <div className="rounded-xl border border-[#0e2d5c] bg-[#010a1a] px-4 py-3 text-xs font-mono text-slate-300 flex flex-wrap items-center justify-between gap-2">
           <span className="inline-flex items-center gap-2">
-            <Mail className="h-3.5 w-3.5 text-emerald-400" />
+            <Mail className="h-3.5 w-3.5 text-[#00e5ff]" />
             Enrollment &amp; Rate Desk Support:
           </span>
           <a
             href={`mailto:${ADMIN_NOTIFICATION_EMAIL}`}
-            className="text-emerald-300 font-bold underline underline-offset-2"
+            className="text-[#00e5ff] font-bold underline underline-offset-2"
           >
             {ADMIN_NOTIFICATION_EMAIL}
           </a>
         </div>
 
-        <p className="text-[11px] text-neutral-500 font-mono pt-1">
+        <p className="text-[11px] text-slate-400 font-mono pt-1">
           {STANDARD_DISCLOSURE}
         </p>
       </div>
@@ -149,26 +149,26 @@ export const EmbeddedContractViewer: React.FC<AgreementProps> = ({
   }
 
   return (
-    <div className="w-full rounded-3xl border border-emerald-500/30 bg-neutral-900 p-6 sm:p-8 text-white shadow-xl mt-8">
-      <div className="flex flex-wrap items-center justify-between border-b border-neutral-800 pb-4 mb-6 gap-4">
+    <div className="w-full rounded-3xl border border-cyan-400/35 bg-[#031129] p-6 sm:p-8 text-white shadow-xl mt-8">
+      <div className="flex flex-wrap items-center justify-between border-b border-[#0e2d5c] pb-4 mb-6 gap-4">
         <div>
-          <span className="text-xs font-mono text-emerald-400 uppercase tracking-widest">
+          <span className="text-xs font-mono text-[#00e5ff] uppercase tracking-widest">
             Step 2 • Confirm {plan.term_months}-Month Fixed Rate Selection
           </span>
           <h4 className="text-xl font-bold mt-0.5">
             {plan.provider} — {plan.plan_name}
           </h4>
-          <p className="text-xs text-neutral-400 font-mono mt-0.5">
+          <p className="text-xs text-slate-300 font-mono mt-0.5">
             ZIP {zipCode} ({territory}) • Term: {plan.term_months} Months •{" "}
             {plan.applied_tier_label}
           </p>
         </div>
         <div className="text-right">
-          <div className="text-3xl font-extrabold text-emerald-400 font-mono">
+          <div className="text-3xl font-extrabold text-[#00e5ff] font-mono">
             ${dollarRate}{" "}
-            <span className="text-xs text-neutral-400">/ kWh</span>
+            <span className="text-xs text-slate-400">/ kWh</span>
           </div>
-          <p className="text-xs text-neutral-400 font-mono">
+          <p className="text-xs text-slate-300 font-mono">
             ({plan.rate_per_kwh_cents.toFixed(2)}¢/kWh) • Est. Bill: $
             {plan.est_monthly_bill.toFixed(2)}/mo
           </p>
@@ -176,8 +176,8 @@ export const EmbeddedContractViewer: React.FC<AgreementProps> = ({
       </div>
 
       {/* Sub-tier rate recap */}
-      <div className="rounded-xl border border-neutral-800 bg-neutral-950 p-4 text-xs text-neutral-400 font-mono mb-6 space-y-1.5">
-        <div className="text-neutral-200 font-semibold">
+      <div className="rounded-xl border border-[#0e2d5c] bg-[#010a1a] p-4 text-xs text-slate-300 font-mono mb-6 space-y-1.5">
+        <div className="text-[#00e5ff] font-semibold">
           SELECTED {plan.term_months}-MONTH PLAN SCHEDULE (
           {plan.provider.toUpperCase()}):
         </div>
@@ -190,7 +190,7 @@ export const EmbeddedContractViewer: React.FC<AgreementProps> = ({
           • Term: {plan.term_months} Months Fixed • Renewable:{" "}
           {plan.renewable_pct}% • Early Exit Fee: ${plan.cancellation_fee}
         </div>
-        <div className="text-[11px] text-neutral-500 pt-1">
+        <div className="text-[11px] text-slate-400 pt-1">
           {STANDARD_DISCLOSURE}
         </div>
       </div>
@@ -204,7 +204,7 @@ export const EmbeddedContractViewer: React.FC<AgreementProps> = ({
       <div className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs uppercase font-mono text-neutral-400 mb-1.5">
+            <label className="block text-xs uppercase font-mono text-slate-300 mb-1.5">
               Email Address (For Rate Lock Confirmation) *
             </label>
             <input
@@ -212,12 +212,12 @@ export const EmbeddedContractViewer: React.FC<AgreementProps> = ({
               placeholder="you@domain.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-xl border border-neutral-800 bg-neutral-950 px-4 py-3 text-sm text-white focus:border-emerald-500 focus:outline-none"
+              className="w-full rounded-xl border border-[#0e2d5c] bg-[#010a1a] px-4 py-3 text-sm text-white focus:border-[#00e5ff] focus:outline-none"
             />
           </div>
 
           <div>
-            <label className="block text-xs uppercase font-mono text-neutral-400 mb-1.5">
+            <label className="block text-xs uppercase font-mono text-slate-300 mb-1.5">
               Mobile / Direct Phone *
             </label>
             <input
@@ -225,7 +225,7 @@ export const EmbeddedContractViewer: React.FC<AgreementProps> = ({
               placeholder="(214) 555-0199"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              className="w-full rounded-xl border border-neutral-800 bg-neutral-950 px-4 py-3 text-sm text-white focus:border-emerald-500 focus:outline-none"
+              className="w-full rounded-xl border border-[#0e2d5c] bg-[#010a1a] px-4 py-3 text-sm text-white focus:border-[#00e5ff] focus:outline-none"
             />
           </div>
         </div>
@@ -235,9 +235,9 @@ export const EmbeddedContractViewer: React.FC<AgreementProps> = ({
             type="checkbox"
             checked={acknowledged}
             onChange={(e) => setAcknowledged(e.target.checked)}
-            className="mt-1 h-4 w-4 rounded border-neutral-700 bg-neutral-800 text-emerald-500 focus:ring-0"
+            className="mt-1 h-4 w-4 rounded border-[#0e2d5c] bg-[#051838] text-[#00e5ff] focus:ring-0"
           />
-          <span className="text-xs text-neutral-300 leading-relaxed">
+          <span className="text-xs text-slate-200 leading-relaxed">
             I confirm my interest in locking today&apos;s{" "}
             <strong>
               ${dollarRate}/kWh ({plan.rate_per_kwh_cents.toFixed(2)}¢/kWh)
@@ -259,13 +259,13 @@ export const EmbeddedContractViewer: React.FC<AgreementProps> = ({
                 e.target.value.replace(/[^a-zA-Z]/g, "").toUpperCase()
               )
             }
-            className="w-full sm:w-1/4 rounded-xl border border-neutral-800 bg-neutral-950 px-4 py-3.5 text-sm font-mono text-center text-white focus:border-emerald-500 focus:outline-none"
+            className="w-full sm:w-1/4 rounded-xl border border-[#0e2d5c] bg-[#010a1a] px-4 py-3.5 text-sm font-mono text-center text-white focus:border-[#00e5ff] focus:outline-none"
           />
           <button
             type="button"
             onClick={handleCaptureProspect}
             disabled={!acknowledged || !email || !phone || submitting}
-            className="w-full sm:w-3/4 rounded-xl bg-emerald-500 py-3.5 px-6 font-bold text-neutral-950 hover:bg-emerald-400 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-lg shadow-emerald-500/20 cursor-pointer flex items-center justify-center gap-2"
+            className="ec-btn-cyan w-full sm:w-3/4 rounded-xl py-3.5 px-6 font-extrabold disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer flex items-center justify-center gap-2"
           >
             <ShieldCheck className="h-4 w-4" />
             {submitting

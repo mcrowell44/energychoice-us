@@ -17,7 +17,7 @@ export const TexasDeregulatedCitiesDirectory: React.FC<
   TexasDeregulatedCitiesDirectoryProps
 > = ({ activeCityName, onSelectCity }) => {
   const [filterQuery, setFilterQuery] = useState("");
-  const [activeLetter, setActiveLetter] = useState<string>("ALL");
+  const [activeLetter, setActiveLetter] = useState<string>("A");
   const [expanded, setExpanded] = useState(false);
 
   const availableLetters = useMemo(() => {
@@ -31,16 +31,18 @@ export const TexasDeregulatedCitiesDirectory: React.FC<
   const filteredCities = useMemo(() => {
     const q = filterQuery.trim().toLowerCase();
     return TEXAS_DEREGULATED_CITIES.filter((city) => {
+      if (q) {
+        return (
+          city.name.toLowerCase().includes(q) ||
+          city.zip.startsWith(q) ||
+          city.tdspName.toLowerCase().includes(q) ||
+          city.aliases?.some((a) => a.toLowerCase().includes(q))
+        );
+      }
       if (activeLetter !== "ALL" && city.name[0].toUpperCase() !== activeLetter) {
         return false;
       }
-      if (!q) return true;
-      return (
-        city.name.toLowerCase().includes(q) ||
-        city.zip.startsWith(q) ||
-        city.tdspName.toLowerCase().includes(q) ||
-        city.aliases?.some((a) => a.toLowerCase().includes(q))
-      );
+      return true;
     });
   }, [filterQuery, activeLetter]);
 
@@ -53,12 +55,12 @@ export const TexasDeregulatedCitiesDirectory: React.FC<
   return (
     <section
       id="texas-deregulated-cities"
-      className="mt-14 rounded-3xl border border-neutral-800 bg-neutral-900/60 p-6 sm:p-10 text-white shadow-xl space-y-6"
+      className="mt-14 rounded-3xl border border-[#0e2d5c] bg-[#031129]/85 p-6 sm:p-10 text-white shadow-xl space-y-6"
     >
       {/* Header */}
-      <div className="flex flex-wrap items-start justify-between gap-4 border-b border-neutral-800 pb-6">
+      <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[#0e2d5c] pb-6">
         <div className="space-y-2 max-w-3xl">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-mono text-emerald-300">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-cyan-400/35 bg-cyan-400/10 px-3 py-1 text-xs font-mono text-[#00e5ff]">
             <MapPin className="h-3.5 w-3.5" />
             {TEXAS_DEREGULATED_CITIES.length} Verified ERCOT Retail Choice
             Locations
@@ -66,12 +68,12 @@ export const TexasDeregulatedCitiesDirectory: React.FC<
           <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
             The Complete List of Deregulated Cities in Texas
           </h2>
-          <p className="text-xs sm:text-sm text-neutral-400 leading-relaxed">
+          <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
             Deregulated cities include Houston, Dallas, Fort Worth, Corpus
             Christi, Galveston, Waco, and many more. The complete list below
             reflects all the cities and towns in Texas with deregulated
             electricity markets—click any city to load instant{" "}
-            <span className="text-emerald-300 font-mono">18–72 month</span>{" "}
+            <span className="text-[#00e5ff] font-mono">18–72 month</span>{" "}
             supplier quotes.
           </p>
         </div>
@@ -79,18 +81,15 @@ export const TexasDeregulatedCitiesDirectory: React.FC<
         {/* Search Input */}
         <div className="w-full sm:w-72">
           <div className="relative">
-            <Search className="h-4 w-4 text-neutral-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <Search className="h-4 w-4 text-cyan-400/70 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
               placeholder="Filter city, town, or ZIP..."
               value={filterQuery}
               onChange={(e) => {
                 setFilterQuery(e.target.value);
-                if (e.target.value.trim()) {
-                  setActiveLetter("ALL");
-                }
               }}
-              className="w-full rounded-xl border border-neutral-800 bg-neutral-950 pl-10 pr-4 py-2.5 text-xs font-mono text-white placeholder-neutral-500 focus:border-emerald-500 focus:outline-none"
+              className="w-full rounded-xl border border-[#0e2d5c] bg-[#010a1a] pl-10 pr-4 py-2.5 text-xs font-mono text-white placeholder-slate-500 focus:border-[#00e5ff] focus:outline-none"
             />
           </div>
         </div>
@@ -98,7 +97,7 @@ export const TexasDeregulatedCitiesDirectory: React.FC<
 
       {/* Featured Major Hubs */}
       <div>
-        <div className="text-[11px] font-mono uppercase tracking-wider text-emerald-400 mb-2.5 flex items-center gap-1.5">
+        <div className="text-[11px] font-mono uppercase tracking-wider text-[#00e5ff] mb-2.5 flex items-center gap-1.5">
           <Zap className="h-3.5 w-3.5" />
           Major Texas Deregulated Markets (Instant Rate Lookup)
         </div>
@@ -113,8 +112,8 @@ export const TexasDeregulatedCitiesDirectory: React.FC<
                 onClick={() => onSelectCity(city)}
                 className={`rounded-full border px-3 py-1.5 text-xs font-mono transition-all cursor-pointer ${
                   isSelected
-                    ? "border-emerald-400 bg-emerald-500/20 text-white font-bold"
-                    : "border-neutral-800 bg-neutral-950 text-neutral-300 hover:border-emerald-500/40 hover:text-emerald-300"
+                    ? "border-[#00e5ff] bg-cyan-400/20 text-white font-bold shadow-[0_0_15px_rgba(0,229,255,0.25)]"
+                    : "border-[#0e2d5c] bg-[#010a1a] text-slate-300 hover:border-cyan-400/50 hover:text-[#00e5ff]"
                 }`}
               >
                 {city.name}
@@ -125,14 +124,14 @@ export const TexasDeregulatedCitiesDirectory: React.FC<
       </div>
 
       {/* A-Z Index Bar */}
-      <div className="flex flex-wrap items-center gap-1.5 border-y border-neutral-800/80 py-3">
+      <div className="flex flex-wrap items-center gap-1.5 border-y border-[#0e2d5c]/80 py-3">
         <button
           type="button"
           onClick={() => setActiveLetter("ALL")}
           className={`rounded-lg px-2.5 py-1 text-xs font-mono transition-colors cursor-pointer ${
             activeLetter === "ALL"
-              ? "bg-emerald-500 text-neutral-950 font-bold"
-              : "bg-neutral-950 text-neutral-400 hover:text-white"
+              ? "bg-[#00e5ff] text-[#010a1a] font-bold"
+              : "bg-[#010a1a] text-slate-400 hover:text-white"
           }`}
         >
           All ({TEXAS_DEREGULATED_CITIES.length})
@@ -148,10 +147,10 @@ export const TexasDeregulatedCitiesDirectory: React.FC<
               onClick={() => setActiveLetter(letter)}
               className={`rounded-lg px-2 py-1 text-xs font-mono transition-colors ${
                 !hasCities
-                  ? "text-neutral-700 cursor-not-allowed"
+                  ? "text-slate-700 cursor-not-allowed"
                   : isCurrent
-                    ? "bg-emerald-500 text-neutral-950 font-bold cursor-pointer"
-                    : "bg-neutral-950 text-neutral-400 hover:text-white cursor-pointer"
+                    ? "bg-[#00e5ff] text-[#010a1a] font-bold cursor-pointer"
+                    : "bg-[#010a1a] text-slate-400 hover:text-white cursor-pointer"
               }`}
             >
               {letter}
@@ -162,7 +161,7 @@ export const TexasDeregulatedCitiesDirectory: React.FC<
 
       {/* Complete City Grid */}
       {displayedCities.length === 0 ? (
-        <div className="rounded-2xl border border-neutral-800 bg-neutral-950 p-6 text-center text-xs font-mono text-neutral-400">
+        <div className="rounded-2xl border border-[#0e2d5c] bg-[#010a1a] p-6 text-center text-xs font-mono text-slate-400">
           No listed Texas deregulated city matched &ldquo;{filterQuery}&rdquo;.
           Enter your city or ZIP code in the rate search above to verify Power
           to Choose eligibility.
@@ -180,14 +179,14 @@ export const TexasDeregulatedCitiesDirectory: React.FC<
                 title={`View live electricity rates in ${city.name}, TX (${city.zip} • ${city.tdspName})`}
                 className={`group rounded-xl border px-3 py-2 text-left transition-all flex items-center justify-between gap-2 cursor-pointer ${
                   isSelected
-                    ? "border-emerald-500 bg-emerald-500/15 text-white"
-                    : "border-neutral-800/80 bg-neutral-950/70 text-neutral-300 hover:border-emerald-500/40 hover:bg-neutral-900"
+                    ? "border-[#00e5ff] bg-cyan-400/15 text-white"
+                    : "border-[#0e2d5c]/80 bg-[#010a1a]/80 text-slate-300 hover:border-cyan-400/50 hover:bg-[#051838]"
                 }`}
               >
-                <span className="text-xs font-medium truncate group-hover:text-emerald-300 transition-colors">
+                <span className="text-xs font-medium truncate group-hover:text-[#00e5ff] transition-colors">
                   {city.name}
                 </span>
-                <span className="text-[10px] font-mono text-neutral-500 group-hover:text-emerald-400 shrink-0">
+                <span className="text-[10px] font-mono text-slate-400 group-hover:text-cyan-300 shrink-0">
                   {city.zip}
                 </span>
               </button>
@@ -204,7 +203,7 @@ export const TexasDeregulatedCitiesDirectory: React.FC<
             <button
               type="button"
               onClick={() => setExpanded((v) => !v)}
-              className="inline-flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 px-5 py-2.5 text-xs font-mono font-semibold text-emerald-300 transition-all cursor-pointer"
+              className="inline-flex items-center gap-2 rounded-xl border border-cyan-400/35 bg-cyan-400/10 hover:bg-cyan-400/20 px-5 py-2.5 text-xs font-mono font-semibold text-[#00e5ff] transition-all cursor-pointer"
             >
               {expanded ? (
                 <>
