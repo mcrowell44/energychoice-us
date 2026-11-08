@@ -27,6 +27,8 @@ export interface UsageTierSpec {
   shortName: string;
   rangeLabel: string;
   subLabel: string;
+  minAnnualKwh: number;
+  maxAnnualKwh: number;
   minKwh: number;
   maxKwh: number;
   presetKwh: number;
@@ -38,79 +40,92 @@ export const USAGE_TIERS: UsageTierSpec[] = [
   {
     id: "TIER_1",
     shortName: "Tier 1",
-    rangeLabel: "1 – 1,999 kWh/mo",
-    subLabel: "Residential & Micro Meter",
+    rangeLabel: "1,000 – 49,999 kWh Annually",
+    subLabel: "Automatic Signup (~83 – 4,166 kWh/mo)",
+    minAnnualKwh: 1000,
+    maxAnnualKwh: 49999,
     minKwh: 1,
-    maxKwh: 1999,
-    presetKwh: 1000,
+    maxKwh: 4166,
+    presetKwh: 2000,
     isRealTime: true,
-    turnaroundLabel: "Real-Time Daily Offer",
+    turnaroundLabel: "Automatic Real-Time Signup",
   },
   {
     id: "TIER_2",
     shortName: "Tier 2",
-    rangeLabel: "2,000 – 49,999 kWh/mo",
-    subLabel: "Small & Mid Commercial Matrix",
-    minKwh: 2000,
-    maxKwh: 49999,
-    presetKwh: 10000,
-    isRealTime: true,
-    turnaroundLabel: "Real-Time Commercial Offer",
+    rangeLabel: "50,000 – 99,999 kWh Annually",
+    subLabel: "Small Commercial (~4,167 – 8,333 kWh/mo)",
+    minAnnualKwh: 50000,
+    maxAnnualKwh: 99999,
+    minKwh: 4167,
+    maxKwh: 8333,
+    presetKwh: 6000,
+    isRealTime: false,
+    turnaroundLabel: "Live Quote • 24-Hr Validation",
   },
   {
     id: "TIER_3",
     shortName: "Tier 3",
-    rangeLabel: "50,000 – 99,999 kWh/mo",
-    subLabel: "Large Commercial Matrix",
-    minKwh: 50000,
-    maxKwh: 99999,
-    presetKwh: 75000,
+    rangeLabel: "100,000 – 299,999 kWh Annually",
+    subLabel: "Mid Commercial (~8,334 – 24,999 kWh/mo)",
+    minAnnualKwh: 100000,
+    maxAnnualKwh: 299999,
+    minKwh: 8334,
+    maxKwh: 24999,
+    presetKwh: 15000,
     isRealTime: false,
-    turnaroundLabel: "Live Quote • 24-Hr Verification",
+    turnaroundLabel: "Live Quote • 24-Hr Validation",
   },
   {
     id: "TIER_4",
     shortName: "Tier 4",
-    rangeLabel: "100,000 – 499,999 kWh/mo",
-    subLabel: "Multi-Site / Regional C&I",
-    minKwh: 100000,
-    maxKwh: 499999,
-    presetKwh: 250000,
+    rangeLabel: "300,000 – 499,999 kWh Annually",
+    subLabel: "Large Commercial (~25,000 – 41,666 kWh/mo)",
+    minAnnualKwh: 300000,
+    maxAnnualKwh: 499999,
+    minKwh: 25000,
+    maxKwh: 41666,
+    presetKwh: 30000,
     isRealTime: false,
-    turnaroundLabel: "Live Quote • 24-Hr Verification",
+    turnaroundLabel: "Live Quote • 24-Hr Validation",
   },
   {
     id: "TIER_5",
     shortName: "Tier 5",
-    rangeLabel: "500,000 – 999,999 kWh/mo",
-    subLabel: "Heavy Commercial / Light Industrial",
-    minKwh: 500000,
-    maxKwh: 999999,
-    presetKwh: 750000,
+    rangeLabel: "500,000 – 999,999 kWh Annually",
+    subLabel: "Heavy Commercial (~41,667 – 83,333 kWh/mo)",
+    minAnnualKwh: 500000,
+    maxAnnualKwh: 999999,
+    minKwh: 41667,
+    maxKwh: 83333,
+    presetKwh: 60000,
     isRealTime: false,
-    turnaroundLabel: "Live Quote • 24-Hr Verification",
+    turnaroundLabel: "Live Quote • 24-Hr Validation",
   },
   {
     id: "TIER_6",
     shortName: "Tier 6",
-    rangeLabel: "1,000,000 – 3,000,000 kWh/mo",
-    subLabel: "Industrial / Megawatt Supply",
-    minKwh: 1000000,
-    maxKwh: 3000000,
-    presetKwh: 1500000,
+    rangeLabel: "1,000,000 – 3,000,000 kWh Annually",
+    subLabel: "Industrial / Megawatt (83,334 – 250,000+ kWh/mo)",
+    minAnnualKwh: 1000000,
+    maxAnnualKwh: 3000000,
+    minKwh: 83334,
+    maxKwh: 250000,
+    presetKwh: 150000,
     isRealTime: false,
-    turnaroundLabel: "Live Quote • 24-Hr Verification",
+    turnaroundLabel: "Live Quote • 24-Hr Validation",
   },
 ];
 
 export function resolveUsageTier(monthlyKwh: number): UsageTierSpec {
-  const safe = Math.max(1, Math.floor(monthlyKwh));
-  for (const tier of USAGE_TIERS) {
-    if (safe >= tier.minKwh && safe <= tier.maxKwh) {
-      return tier;
-    }
-  }
-  return USAGE_TIERS[USAGE_TIERS.length - 1];
+  const safeMonthly = Math.max(1, Math.floor(monthlyKwh));
+  const annualKwh = safeMonthly * 12;
+  if (annualKwh < 50000) return USAGE_TIERS[0];
+  if (annualKwh < 100000) return USAGE_TIERS[1];
+  if (annualKwh < 300000) return USAGE_TIERS[2];
+  if (annualKwh < 500000) return USAGE_TIERS[3];
+  if (annualKwh < 1000000) return USAGE_TIERS[4];
+  return USAGE_TIERS[5];
 }
 
 export interface PlanTierBandColumn {
@@ -231,8 +246,8 @@ export type ExecutionRecord =
   });
 
 /**
- * Computes the effective ¢/kWh rate across the 500 / 1,000 / 2,000 kWh/mo
- * provider usage sub-tiers for Tier 1 (1–1,999 kWh/month) meters.
+ * Computes the effective ¢/kWh rate across the Tier 1 sub-bands
+ * for Tier 1 (1,000 – 49,999 kWh Annually | ~83 – 4,166 kWh/month) meters.
  */
 export function interpolateTier1Rate(
   usageKwh: number,
@@ -240,33 +255,29 @@ export function interpolateTier1Rate(
   rate1000: number,
   rate2000: number
 ): { effectiveRateCents: number; appliedTierLabel: string } {
-  const clamped = Math.max(1, Math.min(1999, usageKwh));
+  const clamped = Math.max(1, Math.min(4166, usageKwh));
 
   if (clamped <= 500) {
     return {
       effectiveRateCents: Number(rate500.toFixed(2)),
-      appliedTierLabel:
-        clamped === 500 ? "500 kWh/mo Sub-Tier" : "1–500 kWh/mo Sub-Tier",
+      appliedTierLabel: "Tier 1A (1,000–14,999 kWh/yr)",
     };
   }
 
-  if (clamped <= 1000) {
-    const ratio = (clamped - 500) / 500;
+  if (clamped <= 1500) {
+    const ratio = (clamped - 500) / 1000;
     const interpolated = rate500 + ratio * (rate1000 - rate500);
     return {
       effectiveRateCents: Number(interpolated.toFixed(2)),
-      appliedTierLabel:
-        clamped === 1000
-          ? "1,000 kWh/mo Benchmark"
-          : "501–1,000 kWh/mo Sub-Tier",
+      appliedTierLabel: "Tier 1B (15,000–29,999 kWh/yr)",
     };
   }
 
-  const ratio = (clamped - 1000) / 1000;
+  const ratio = (clamped - 1500) / 2666;
   const interpolated = rate1000 + ratio * (rate2000 - rate1000);
   return {
     effectiveRateCents: Number(interpolated.toFixed(2)),
-    appliedTierLabel: "1,001–1,999 kWh/mo Sub-Tier",
+    appliedTierLabel: "Tier 1C (30,000–49,999 kWh/yr)",
   };
 }
 

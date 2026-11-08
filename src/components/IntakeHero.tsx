@@ -211,13 +211,13 @@ export const IntakeHero: React.FC<IntakeHeroProps> = ({
           <span className="text-white font-mono">
             18, 24, 36, 48, 60 &amp; 72-month
           </span>{" "}
-          terms for all usage tiers up to{" "}
-          <span className="text-white font-mono">3,000,000 kWh/mo</span>
-          —instant rate locks or{" "}
+          terms for all 6 annual usage tiers up to{" "}
+          <span className="text-white font-mono">3,000,000 kWh/yr</span>
+          —automatic signup for Tier 1 or{" "}
           <span className="text-sky-300 font-semibold">
-            24-hour verified rate reservations
-          </span>
-          .
+            24-hour pricing &amp; usage validation
+          </span>{" "}
+          for Tiers 2–6.
         </p>
 
         <form
@@ -442,19 +442,19 @@ export const IntakeHero: React.FC<IntakeHeroProps> = ({
             </div>
           </div>
 
-          {/* Group 1: Real-Time Offer Tiers (1–1,999 & 2,000–49,999 kWh/mo) */}
+          {/* Group 1: Tier 1 Automatic Signup (1,000 – 49,999 kWh Annually) */}
           <div className="space-y-4">
             <div>
               <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                 <span className="inline-flex items-center gap-1.5 text-xs uppercase tracking-wider font-mono text-[#00e5ff]">
                   <Zap className="h-3.5 w-3.5" />
-                  Instant Real-Time Offers (On-Screen Daily Pricing)
+                  Tier 1 Automatic Signup (1,000 – 49,999 kWh Annually)
                 </span>
                 <span className="text-[11px] font-mono text-cyan-300/90">
-                  Immediate Rate Selection
+                  Immediate Rate Lock &amp; Signup
                 </span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3">
                 {REALTIME_TIERS.map((tier) => {
                   const isActive = validUsage && activeTier.id === tier.id;
                   return (
@@ -473,10 +473,10 @@ export const IntakeHero: React.FC<IntakeHeroProps> = ({
                     >
                       <div className="flex items-center justify-between gap-2">
                         <span className="text-[11px] font-mono uppercase text-[#00e5ff] font-semibold">
-                          {tier.shortName} • Real-Time Offer
+                          {tier.shortName} • Automatic Signup
                         </span>
                         <span className="rounded-full bg-cyan-400/20 border border-cyan-400/30 px-2 py-0.5 text-[10px] font-mono text-cyan-200">
-                          Instant
+                          Instant Lock
                         </span>
                       </div>
                       <div className="text-sm sm:text-base font-extrabold font-mono text-white mt-1">
@@ -491,19 +491,19 @@ export const IntakeHero: React.FC<IntakeHeroProps> = ({
               </div>
             </div>
 
-            {/* Group 2: Live C&I Rate Quotes — Reserve for 24-Hour Verification (50,000 – 3,000,000 kWh/mo) */}
+            {/* Group 2: Tiers 2–6 Live Quotes — 24-Hour Turnaround for Pricing & Usage Validation (50,000 – 3,000,000 kWh Annually) */}
             <div>
               <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                 <span className="inline-flex items-center gap-1.5 text-xs uppercase tracking-wider font-mono text-sky-300">
                   <Clock className="h-3.5 w-3.5 text-sky-400" />
-                  Live Large C&amp;I Quotes — Reserve Rate for 24-Hr
-                  Verification (50,000 – 3,000,000 kWh/mo)
+                  Tiers 2–6 Live Quotes — 24-Hr Turnaround for Pricing &amp;
+                  Usage Validation (50,000 – 3,000,000 kWh Annually)
                 </span>
                 <span className="text-[11px] font-mono text-sky-300/90">
-                  See Live Quotes First • Final Signup Emailed
+                  See Live Quotes First • 24-Hr Validation &amp; Emailed Signup
                 </span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5">
                 {CUSTOM_24HR_TIERS.map((tier) => {
                   const isActive = validUsage && activeTier.id === tier.id;
                   return (
@@ -525,7 +525,7 @@ export const IntakeHero: React.FC<IntakeHeroProps> = ({
                           {tier.shortName}
                         </span>
                         <span className="rounded-full bg-sky-500/25 border border-sky-400/30 px-2 py-0.5 text-[10px] font-mono text-sky-200">
-                          Live Quote
+                          24-Hr Verify
                         </span>
                       </div>
                       <div className="text-xs font-extrabold font-mono text-white mt-1">
@@ -552,13 +552,15 @@ export const IntakeHero: React.FC<IntakeHeroProps> = ({
             <span>
               Active: <strong>{activeTier.shortName}</strong> (
               {activeTier.rangeLabel}) •{" "}
-              {validUsage ? `${effectiveUsage.toLocaleString()} kWh/mo` : "—"} •{" "}
-              <strong>{selectedTerm} Months</strong>
+              {validUsage
+                ? `${effectiveUsage.toLocaleString()} kWh/mo (${(effectiveUsage * 12).toLocaleString()} kWh/yr)`
+                : "—"}{" "}
+              • <strong>{selectedTerm} Months</strong>
             </span>
             <span>
               {activeTier.isRealTime
-                ? `⚡ Real-Time ${selectedTerm}-Mo Quotes → Bill Upload, LOE & Sign`
-                : `⚡ Live ${selectedTerm}-Mo Quotes → Reserve Rate (24-Hr Verify & Emailed Signup)`}
+                ? `⚡ Automatic Signup (${selectedTerm}-Mo) → Bill Upload, LOE & Sign`
+                : `⚡ Live ${selectedTerm}-Mo Quotes → Reserve Rate (24-Hr Pricing & Usage Validation)`}
             </span>
           </div>
 

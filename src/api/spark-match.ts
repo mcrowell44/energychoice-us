@@ -1,5 +1,4 @@
 import {
-  computeTier2MatrixRate,
   CONTRACT_TERMS,
   interpolateTier1Rate,
   normalizeContractTerm,
@@ -254,7 +253,7 @@ function buildTier1PlansByTerm(
 } {
   const territory = resolveTerritoryByZip(zipCode);
   const activeCol: 0 | 1 | 2 =
-    usageKwh <= 650 ? 0 : usageKwh <= 1350 ? 1 : 2;
+    usageKwh <= 1250 ? 0 : usageKwh <= 2500 ? 1 : 2;
 
   const cleanLive = (liveRaw ?? []).filter((p) => {
     const r500 = Number(p.price_kwh500);
@@ -320,14 +319,18 @@ function buildTier1PlansByTerm(
           rate_1000_cents: r1000,
           rate_2000_cents: r2000,
           tier_columns: [
-            { label: "500 kWh", rate_cents: r500, is_active: activeCol === 0 },
             {
-              label: "1,000 kWh",
+              label: "1k–15k/yr",
+              rate_cents: r500,
+              is_active: activeCol === 0,
+            },
+            {
+              label: "15k–30k/yr",
               rate_cents: r1000,
               is_active: activeCol === 1,
             },
             {
-              label: "2,000 kWh",
+              label: "30k–50k/yr",
               rate_cents: r2000,
               is_active: activeCol === 2,
             },
@@ -401,9 +404,17 @@ function buildTier1PlansByTerm(
         rate_1000_cents: r1000,
         rate_2000_cents: r2000,
         tier_columns: [
-          { label: "500 kWh", rate_cents: r500, is_active: activeCol === 0 },
-          { label: "1,000 kWh", rate_cents: r1000, is_active: activeCol === 1 },
-          { label: "2,000 kWh", rate_cents: r2000, is_active: activeCol === 2 },
+          { label: "1k–15k/yr", rate_cents: r500, is_active: activeCol === 0 },
+          {
+            label: "15k–30k/yr",
+            rate_cents: r1000,
+            is_active: activeCol === 1,
+          },
+          {
+            label: "30k–50k/yr",
+            rate_cents: r2000,
+            is_active: activeCol === 2,
+          },
         ],
         rate_structure_note:
           "Fixed Commercial Energy Supply Rate (Excludes Utility Delivery & Fees)",
@@ -529,100 +540,6 @@ const TIER2_COMMERCIAL_SUPPLIERS: CommercialMatrixSupplier[] = [
   },
 ];
 
-async function buildTier2CommercialPlansByTerm(
-  zipCode: string,
-  usageKwh: number
-): Promise<{
-  tduName?: string;
-  plansByTerm: Record<string, SparkPlan[]>;
-}> {
-  const territory = resolveTerritoryByZip(zipCode);
-  let liveTduName: string | undefined;
-
-  if (territory.isTexasErcot) {
-    const liveRaw = await fetchTexasPlansWithHubFallback(zipCode);
-    if (liveRaw && liveRaw.length > 0) {
-      liveTduName = liveRaw[0]?.company_tdu_name;
-    }
-  }
-
-  const todayDrift =
-    ((Math.floor(Date.now() / 86_400_000) % 7) - 3) * 0.04;
-  const commercialAnchor = Number(
-    (territory.commercialSupplyBaseCents + todayDrift).toFixed(2)
-  );
-
-  const tier2Mils = getTierMils("TIER_2"); // 8 mils (+$0.008/kWh | +0.80¢/kWh)
-  const plansByTerm: Record<string, SparkPlan[]> = {};
-
-  for (const term of CONTRACT_TERMS) {
-    const termPlans: SparkPlan[] = TIER2_COMMERCIAL_SUPPLIERS.map((s) => {
-      const shift = s.termCurve[term];
-      const bandA = applyMilsToCentsRate(
-        commercialAnchor + s.spreadA + shift,
-        tier2Mils
-      );
-      const bandB = applyMilsToCentsRate(
-        commercialAnchor + s.spreadB + shift,
-        tier2Mils
-      );
-      const bandC = applyMilsToCentsRate(
-        commercialAnchor + s.spreadC + shift,
-        tier2Mils
-      );
-
-      const { effectiveRateCents, appliedTierLabel, activeBandIndex } =
-        computeTier2MatrixRate(usageKwh, bandA, bandB, bandC);
-
-      const termExitMultiplier = term / 24;
-      const cancelFee = Math.round((s.cancelBase * termExitMultiplier) / 25) * 25;
-
-      return {
-        plan_id: `CMTX-${s.code}-${term}M-${zipCode}`,
-        provider: s.provider,
-        plan_name: `${s.planPrefix} ${term}-Mo`,
-        term_months: term,
-        rate_per_kwh_cents: effectiveRateCents,
-        rate_500_cents: bandA,
-        rate_1000_cents: bandB,
-        rate_2000_cents: bandC,
-        tier_columns: [
-          {
-            label: "2k–10k kWh",
-            rate_cents: bandA,
-            is_active: activeBandIndex === 0,
-          },
-          {
-            label: "10k–25k kWh",
-            rate_cents: bandB,
-            is_active: activeBandIndex === 1,
-          },
-          {
-            label: "25k–50k kWh",
-            rate_cents: bandC,
-            is_active: activeBandIndex === 2,
-          },
-        ],
-        rate_structure_note:
-          "Fixed Commercial Energy Supply Matrix (Excludes Utility Delivery & Fees)",
-        applied_tier_label: appliedTierLabel,
-        est_monthly_bill: computeBill(effectiveRateCents, usageKwh),
-        renewable_pct: s.green,
-        cancellation_fee: cancelFee,
-        source: "live-commercial-matrix",
-      };
-    });
-
-    termPlans.sort((a, b) => a.rate_per_kwh_cents - b.rate_per_kwh_cents);
-    plansByTerm[String(term)] = termPlans;
-  }
-
-  return {
-    tduName: liveTduName,
-    plansByTerm,
-  };
-}
-
 interface LargeCiSubBandConfig {
   labels: [string, string, string];
   cutoffs: [number, number];
@@ -631,30 +548,36 @@ interface LargeCiSubBandConfig {
 }
 
 const LARGE_CI_TIER_CONFIG: Record<
-  Exclude<UsageTierId, "TIER_1" | "TIER_2">,
+  Exclude<UsageTierId, "TIER_1">,
   LargeCiSubBandConfig
 > = {
+  TIER_2: {
+    labels: ["50k–65k/yr", "65k–80k/yr", "80k–100k/yr"],
+    cutoffs: [5417, 6667],
+    volumeDiscounts: [-0.2, -0.35, -0.5],
+    exitMultiplier: 1.0,
+  },
   TIER_3: {
-    labels: ["50k–65k kWh", "65k–80k kWh", "80k–100k kWh"],
-    cutoffs: [65000, 80000],
+    labels: ["100k–165k/yr", "165k–230k/yr", "230k–300k/yr"],
+    cutoffs: [13750, 19167],
     volumeDiscounts: [-0.55, -0.72, -0.88],
     exitMultiplier: 2.0,
   },
   TIER_4: {
-    labels: ["100k–200k kWh", "200k–350k kWh", "350k–500k kWh"],
-    cutoffs: [200000, 350000],
+    labels: ["300k–365k/yr", "365k–430k/yr", "430k–500k/yr"],
+    cutoffs: [30417, 35833],
     volumeDiscounts: [-0.95, -1.12, -1.28],
     exitMultiplier: 3.5,
   },
   TIER_5: {
-    labels: ["500k–650k kWh", "650k–800k kWh", "800k–1M kWh"],
-    cutoffs: [650000, 800000],
+    labels: ["500k–650k/yr", "650k–800k/yr", "800k–1M/yr"],
+    cutoffs: [54167, 66667],
     volumeDiscounts: [-1.32, -1.46, -1.6],
     exitMultiplier: 5.5,
   },
   TIER_6: {
-    labels: ["1M–1.5M kWh", "1.5M–2.25M kWh", "2.25M–3M+ kWh"],
-    cutoffs: [1500000, 2250000],
+    labels: ["1M–1.5M/yr", "1.5M–2.25M/yr", "2.25M–3M+/yr"],
+    cutoffs: [125000, 187500],
     volumeDiscounts: [-1.65, -1.8, -1.95],
     exitMultiplier: 8.0,
   },
@@ -663,7 +586,7 @@ const LARGE_CI_TIER_CONFIG: Record<
 async function buildLargeCiPlansByTerm(
   zipCode: string,
   usageKwh: number,
-  tierId: Exclude<UsageTierId, "TIER_1" | "TIER_2">
+  tierId: Exclude<UsageTierId, "TIER_1">
 ): Promise<{
   tduName?: string;
   plansByTerm: Record<string, SparkPlan[]>;
@@ -684,7 +607,7 @@ async function buildLargeCiPlansByTerm(
     (territory.commercialSupplyBaseCents + todayDrift).toFixed(2)
   );
 
-  const tierMils = getTierMils(tierId); // TIER_3=7, TIER_4=5, TIER_5=4, TIER_6=3
+  const tierMils = getTierMils(tierId); // TIER_2=8, TIER_3=7, TIER_4=5, TIER_5=4, TIER_6=3
   const cfg = LARGE_CI_TIER_CONFIG[tierId];
   const activeIdx: 0 | 1 | 2 =
     usageKwh < cfg.cutoffs[0] ? 0 : usageKwh < cfg.cutoffs[1] ? 1 : 2;
@@ -806,13 +729,8 @@ export default async function handler(req: Request): Promise<Response> {
     const tierSpec = resolveUsageTier(usage);
     const fetchedAt = new Date().toISOString();
 
-    // TIERS 3, 4, 5, 6 (50,000 – 3,000,000+ kWh/mo): Live Multi-Term Rate Quotes -> Reserve for 24-Hr Verification & Emailed Signup
-    if (
-      tierSpec.id === "TIER_3" ||
-      tierSpec.id === "TIER_4" ||
-      tierSpec.id === "TIER_5" ||
-      tierSpec.id === "TIER_6"
-    ) {
+    // TIERS 2, 3, 4, 5, 6 (50,000 – 3,000,000+ kWh Annually): Live Multi-Term Rate Quotes -> Reserve for 24-Hr Pricing & Usage Validation
+    if (tierSpec.id !== "TIER_1") {
       const { tduName, plansByTerm } = await buildLargeCiPlansByTerm(
         zip_code,
         usage,
@@ -852,40 +770,7 @@ export default async function handler(req: Request): Promise<Response> {
       });
     }
 
-    // TIER 2 (2,000 – 49,999 kWh/mo): Real-Time Commercial Matrix Across 18, 24, 36, 48, 60, 72 Mos
-    if (tierSpec.id === "TIER_2") {
-      const { tduName, plansByTerm } = await buildTier2CommercialPlansByTerm(
-        zip_code,
-        usage
-      );
-
-      const response: SparkMatchResponse = {
-        mode: "TIER2_REALTIME_LOE",
-        tier_id: "TIER_2",
-        tier_range_label: tierSpec.rangeLabel,
-        turnaround_sla: "REAL_TIME",
-        territory: tduName
-          ? `${tduName} • ERCOT`
-          : `${territoryInfo.region} • ${territoryInfo.iso}`,
-        iso: territoryInfo.iso,
-        annualized_kwh: usage * 12,
-        commercial_tier_label: `${tierSpec.shortName}: ${tierSpec.rangeLabel}`,
-        engine: "live-commercial-matrix",
-        fetched_at: fetchedAt,
-        disclosure: process.env.DEFAULT_DISCLOSURE || STANDARD_DISCLOSURE,
-        selected_term_months: selectedTerm,
-        available_terms: [...CONTRACT_TERMS],
-        plans: plansByTerm[String(selectedTerm)] || plansByTerm["18"],
-        plans_by_term: plansByTerm,
-      };
-
-      return new Response(JSON.stringify(response), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-
-    // TIER 1 (1 – 1,999 kWh/mo): Real-Time Daily Provider Quotes Across 18, 24, 36, 48, 60, 72 Mos
+    // TIER 1 (1,000 – 49,999 kWh Annually): Automatic Real-Time Signup Across 18, 24, 36, 48, 60, 72 Mos
     const liveRaw = territoryInfo.isTexasErcot
       ? await fetchTexasPlansWithHubFallback(zip_code)
       : null;

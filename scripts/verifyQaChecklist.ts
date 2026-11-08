@@ -40,14 +40,22 @@ async function queryTier(zip: string, kwh: number) {
 async function runQaSuite() {
   console.log("Running Energy Choice US 6-Tier Automated QA Suite...\n");
 
-  // 1. Tier 1 (1 – 1,999 kWh/mo): Real-Time Offer Across 18, 24, 36, 48, 60, 72 Mos
-  const t1 = await queryTier("75068", 1250);
+  // 1. Tier 1 (1,000 – 49,999 kWh Annually | ~83 – 4,166 kWh/mo): Automatic Real-Time Offer Across 18, 24, 36, 48, 60, 72 Mos
+  const t1 = await queryTier("75068", 1250); // 15,000 kWh/yr
+  const t1High = await queryTier("75068", 4000); // 48,000 kWh/yr (still Tier 1)
   assert(
     t1.mode === "TIER1_REALTIME" &&
       t1.tier_id === "TIER_1" &&
+      t1.tier_range_label === "1,000 – 49,999 kWh Annually" &&
       t1.turnaround_sla === "REAL_TIME" &&
       t1.plans.length === 8,
-    "Tier 1 (1,250 kWh) must return TIER1_REALTIME with 8 expanded competing plans"
+    "Tier 1 (1,250 kWh/mo = 15,000 kWh/yr) must return TIER1_REALTIME with 8 expanded competing plans"
+  );
+  assert(
+    t1High.mode === "TIER1_REALTIME" &&
+      t1High.tier_id === "TIER_1" &&
+      t1High.plans[0].rate_per_kwh_cents < t1.plans[0].rate_per_kwh_cents,
+    "4,000 kWh/mo (48,000 kWh/yr) must remain in Tier 1 and receive lower sub-band rate than 1,250 kWh/mo"
   );
   for (const term of CONTRACT_TERMS) {
     const list = t1.plans_by_term?.[String(term)] || [];
@@ -64,55 +72,31 @@ async function runQaSuite() {
     "Tier 1 lead rates must dynamically vary across 18–72 month terms"
   );
   console.log(
-    `✅ [PASS] Tier 1 Multi-Term Quotes (18/24/36/48/60/72m • 8 per term) — Lead Curve: ${CONTRACT_TERMS.map((tm, i) => `${tm}m=${t1RatesAcrossTerms[i]}¢`).join(" | ")}`
+    `✅ [PASS] Tier 1 Automatic Signup (1,000–49,999 kWh/yr • 8 per term) — Lead Curve: ${CONTRACT_TERMS.map((tm, i) => `${tm}m=${t1RatesAcrossTerms[i]}¢`).join(" | ")}`
   );
 
-  // 2. Tier 2 (2,000 – 49,999 kWh/mo): Real-Time Commercial Matrix Across 18, 24, 36, 48, 60, 72 Mos
-  const t2Low = await queryTier("75068", 2000);
-  const t2High = await queryTier("75068", 49999);
-  assert(
-    t2Low.mode === "TIER2_REALTIME_LOE" &&
-      t2Low.tier_id === "TIER_2" &&
-      t2Low.turnaround_sla === "REAL_TIME" &&
-      t2Low.plans.length === 8,
-    "2,000 kWh/mo must return TIER2_REALTIME_LOE with 8 expanded real-time commercial offers"
-  );
-  for (const term of CONTRACT_TERMS) {
-    const list = t2Low.plans_by_term?.[String(term)] || [];
-    assert(
-      list.length === 8 && list.every((p: { term_months: number }) => p.term_months === term),
-      `Tier 2 must provide 8 quotes for ${term}-month term`
-    );
-  }
-  const t2RatesAcrossTerms = CONTRACT_TERMS.map(
-    (term) => t2Low.plans_by_term[String(term)][0].rate_per_kwh_cents
-  );
-  assert(
-    new Set(t2RatesAcrossTerms).size >= 4,
-    "Tier 2 commercial matrix rates must dynamically shift across 18–72 month terms"
-  );
-  assert(
-    t2High.mode === "TIER2_REALTIME_LOE" &&
-      t2High.plans[0].rate_per_kwh_cents < t2Low.plans[0].rate_per_kwh_cents,
-    "49,999 kWh/mo must remain in TIER_2 and receive lower matrix sub-band rate than 2,000 kWh/mo"
-  );
-  console.log(
-    `✅ [PASS] Tier 2 Commercial Multi-Term Curve (18/24/36/48/60/72m) — ${CONTRACT_TERMS.map((tm, i) => `${tm}m=${t2RatesAcrossTerms[i]}¢`).join(" | ")}`
-  );
-
-  // 3. Tiers 3, 4, 5, 6 (50,000 – 3,000,000 kWh/mo): Live Multi-Term Quotes to Reserve for 24-Hour Verification
+  // 2 & 3. Tiers 2, 3, 4, 5, 6 (50,000 – 3,000,000 kWh Annually): Live Multi-Term Quotes to Reserve for 24-Hour Pricing & Usage Validation
   const expected24Hr: Array<[number, string, string]> = [
-    [50000, "TIER_3", "50,000 – 99,999 kWh/mo"],
-    [99999, "TIER_3", "50,000 – 99,999 kWh/mo"],
-    [100000, "TIER_4", "100,000 – 499,999 kWh/mo"],
-    [499999, "TIER_4", "100,000 – 499,999 kWh/mo"],
-    [500000, "TIER_5", "500,000 – 999,999 kWh/mo"],
-    [999999, "TIER_5", "500,000 – 999,999 kWh/mo"],
-    [1000000, "TIER_6", "1,000,000 – 3,000,000 kWh/mo"],
-    [3000000, "TIER_6", "1,000,000 – 3,000,000 kWh/mo"],
+    [4200, "TIER_2", "50,000 – 99,999 kWh Annually"], // 50,400 kWh/yr
+    [8000, "TIER_2", "50,000 – 99,999 kWh Annually"], // 96,000 kWh/yr
+    [10000, "TIER_3", "100,000 – 299,999 kWh Annually"], // 120,000 kWh/yr
+    [24000, "TIER_3", "100,000 – 299,999 kWh Annually"], // 288,000 kWh/yr
+    [26000, "TIER_4", "300,000 – 499,999 kWh Annually"], // 312,000 kWh/yr
+    [40000, "TIER_4", "300,000 – 499,999 kWh Annually"], // 480,000 kWh/yr
+    [45000, "TIER_5", "500,000 – 999,999 kWh Annually"], // 540,000 kWh/yr
+    [80000, "TIER_5", "500,000 – 999,999 kWh Annually"], // 960,000 kWh/yr
+    [90000, "TIER_6", "1,000,000 – 3,000,000 kWh Annually"], // 1,080,000 kWh/yr
+    [200000, "TIER_6", "1,000,000 – 3,000,000 kWh Annually"], // 2,400,000 kWh/yr
   ];
 
   const tierLeadRates: Record<string, number> = {};
+  let sampleT2Plan: {
+    provider: string;
+    plan_name: string;
+    rate_per_kwh_cents: number;
+    term_months: number;
+    est_monthly_bill: number;
+  } | null = null;
   let sampleT4Plan: {
     provider: string;
     plan_name: string;
@@ -129,18 +113,21 @@ async function runQaSuite() {
         res.tier_range_label === expectedLabel &&
         res.turnaround_sla === "24_HOUR_TURNAROUND" &&
         res.plans.length === 8,
-      `${kwh} kWh/mo must return 8 live reservable quotes with 24_HOUR_TURNAROUND (got ${res.plans.length})`
+      `${kwh} kWh/mo (${kwh * 12} kWh/yr) must return 8 live reservable quotes with 24_HOUR_TURNAROUND for ${expectedId}`
     );
     for (const term of CONTRACT_TERMS) {
       const list = res.plans_by_term?.[String(term)] || [];
       assert(
         list.length === 8 &&
           list.every((p: { term_months: number }) => p.term_months === term),
-        `${expectedId} (${kwh} kWh) must return 8 live quotes for ${term}m`
+        `${expectedId} (${kwh} kWh/mo) must return 8 live quotes for ${term}m`
       );
     }
     if (tierLeadRates[expectedId] === undefined) {
       tierLeadRates[expectedId] = res.plans[0].rate_per_kwh_cents;
+    }
+    if (expectedId === "TIER_2" && !sampleT2Plan) {
+      sampleT2Plan = res.plans[0];
     }
     if (expectedId === "TIER_4" && !sampleT4Plan) {
       sampleT4Plan = res.plans[0];
@@ -148,15 +135,15 @@ async function runQaSuite() {
   }
   assert(
     t1.plans[0].rate_per_kwh_cents < 10.0 &&
-      t1.plans[0].rate_per_kwh_cents > t2Low.plans[0].rate_per_kwh_cents &&
-      t2Low.plans[0].rate_per_kwh_cents > tierLeadRates.TIER_3 &&
+      t1.plans[0].rate_per_kwh_cents > tierLeadRates.TIER_2 &&
+      tierLeadRates.TIER_2 > tierLeadRates.TIER_3 &&
       tierLeadRates.TIER_3 > tierLeadRates.TIER_4 &&
       tierLeadRates.TIER_4 > tierLeadRates.TIER_5 &&
       tierLeadRates.TIER_5 > tierLeadRates.TIER_6,
     "Live lead rates must be true energy-only supply rates (<10¢) and monotonically scale down across Tiers 1 -> 2 -> 3 -> 4 -> 5 -> 6"
   );
   console.log(
-    `✅ [PASS] Tiers 3–6 Live Reservable Multi-Term Quotes (24-Hr Verify) — T3=${tierLeadRates.TIER_3}¢ | T4=${tierLeadRates.TIER_4}¢ | T5=${tierLeadRates.TIER_5}¢ | T6=${tierLeadRates.TIER_6}¢`
+    `✅ [PASS] Tiers 2–6 Live Reservable Quotes (24-Hr Validation, 50k–3M kWh/yr) — T2=${tierLeadRates.TIER_2}¢ | T3=${tierLeadRates.TIER_3}¢ | T4=${tierLeadRates.TIER_4}¢ | T5=${tierLeadRates.TIER_5}¢ | T6=${tierLeadRates.TIER_6}¢`
   );
 
   // 4. Tier 1 Prospect Capture
@@ -195,25 +182,25 @@ async function runQaSuite() {
     `✅ [PASS] Tier 1 Prospect Capture & Notification Routing (${t1CaptureJson.notificationEmail}) Verified`
   );
 
-  // 5. Tier 2 Real-Time Commercial Rate Lock + Bill + Signed LOE
+  // 5. Tier 2 Reserved Quote (6,000 kWh/mo = 72,000 kWh/yr) + Bill + Signed LOE (24-Hr Validation)
   const samplePdfBase64 =
     "data:application/pdf;base64," +
     Buffer.from("%PDF-1.4 Sample Commercial Statement").toString("base64");
 
-  const t2Plan = t2Low.plans[0];
+  const t2Plan = sampleT2Plan!;
   const t2LockRes = await submitLoeHandler(
     new Request("http://localhost/api/submit-loe", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         zipCode: "75068",
-        territory: t2Low.territory,
-        monthlyKwh: 18500,
+        territory: t1.territory,
+        monthlyKwh: 6000,
         selectedProvider: t2Plan.provider,
         selectedPlanName: t2Plan.plan_name,
         selectedRateCents: t2Plan.rate_per_kwh_cents,
         selectedTermMonths: t2Plan.term_months,
-        estMonthlyBill: 1350,
+        estMonthlyBill: t2Plan.est_monthly_bill,
         businessName: "Metro Retail Group LLC",
         authorizedSignerName: "Signers Name",
         signerTitle: "Authorized Representative",
@@ -231,16 +218,17 @@ async function runQaSuite() {
   const t2LockJson = await t2LockRes.json();
   assert(
     t2LockRes.status === 200 &&
-      t2LockJson.record?.status === "LOE_REALTIME_RATE_LOCK" &&
+      t2LockJson.record?.status === "LOE_24HR_CUSTOM_QUOTE" &&
+      t2LockJson.record?.turnaroundSla === "24_HOUR_TURNAROUND" &&
       t2LockJson.notificationEmail === ADMIN_NOTIFICATION_EMAIL &&
       t2LockJson.record?.adminNotificationEmail === ADMIN_NOTIFICATION_EMAIL,
-    "Tier 2 real-time lock LOE must return LOE_REALTIME_RATE_LOCK and route to energychoiceus@cdmweb.store"
+    "Tier 2 (72,000 kWh/yr) LOE must return LOE_24HR_CUSTOM_QUOTE with 24_HOUR_TURNAROUND and route to energychoiceus@cdmweb.store"
   );
   console.log(
-    `✅ [PASS] Tier 2 Real-Time Offer + Bill & Signed LOE Lock (${t2LockJson.record.confirmationId})`
+    `✅ [PASS] Tier 2 Reserved Quote + Bill & Signed LOE (${t2LockJson.record.confirmationId})`
   );
 
-  // 6. Tier 4 (250,000 kWh/mo) Reserved Live Rate Quote + Bill + Signed LOE (24-Hr Verification & Emailed Signup)
+  // 6. Tier 4 (30,000 kWh/mo = 360,000 kWh/yr) Reserved Live Rate Quote + Bill + Signed LOE (24-Hr Validation)
   const t4Res = await submitLoeHandler(
     new Request("http://localhost/api/submit-loe", {
       method: "POST",
@@ -248,7 +236,7 @@ async function runQaSuite() {
       body: JSON.stringify({
         zipCode: "77002",
         territory: "Houston Metro • ERCOT",
-        monthlyKwh: 250000,
+        monthlyKwh: 30000,
         selectedProvider: sampleT4Plan?.provider,
         selectedPlanName: sampleT4Plan?.plan_name,
         selectedRateCents: sampleT4Plan?.rate_per_kwh_cents,
@@ -276,7 +264,7 @@ async function runQaSuite() {
       t4Json.record?.selectedProvider === sampleT4Plan?.provider &&
       t4Json.record?.selectedRateCents === sampleT4Plan?.rate_per_kwh_cents &&
       t4Json.notificationEmail === ADMIN_NOTIFICATION_EMAIL,
-    "250,000 kWh/mo Reserved Quote LOE must preserve selected quote, 24_HOUR_TURNAROUND, and route to energychoiceus@cdmweb.store"
+    "360,000 kWh/yr Reserved Quote LOE must preserve selected quote, 24_HOUR_TURNAROUND, and route to energychoiceus@cdmweb.store"
   );
   console.log(
     `✅ [PASS] Tier 4 Reserved Live Quote + Bill & Signed LOE (${t4Json.record.confirmationId} @ $${((sampleT4Plan?.rate_per_kwh_cents || 0) / 100).toFixed(4)}/kWh)`
@@ -308,31 +296,30 @@ async function runQaSuite() {
     "TIER_MILS_SCHEDULE must strictly equal [10, 8, 7, 5, 4, 3]"
   );
   assert(
-    getMilsForMonthlyKwh(1000).mils === 10 &&
-      getMilsForMonthlyKwh(10000).mils === 8 &&
-      getMilsForMonthlyKwh(75000).mils === 7 &&
-      getMilsForMonthlyKwh(250000).mils === 5 &&
-      getMilsForMonthlyKwh(750000).mils === 4 &&
-      getMilsForMonthlyKwh(1500000).mils === 3,
-    "getMilsForMonthlyKwh must map each of the 6 tiers to [10, 8, 7, 5, 4, 3]"
+    getMilsForMonthlyKwh(2000).mils === 10 && // 24,000 kWh/yr -> Tier 1
+      getMilsForMonthlyKwh(6000).mils === 8 && // 72,000 kWh/yr -> Tier 2
+      getMilsForMonthlyKwh(15000).mils === 7 && // 180,000 kWh/yr -> Tier 3
+      getMilsForMonthlyKwh(30000).mils === 5 && // 360,000 kWh/yr -> Tier 4
+      getMilsForMonthlyKwh(60000).mils === 4 && // 720,000 kWh/yr -> Tier 5
+      getMilsForMonthlyKwh(150000).mils === 3, // 1,800,000 kWh/yr -> Tier 6
+    "getMilsForMonthlyKwh must map each of the 6 annual kWh tiers to [10, 8, 7, 5, 4, 3]"
   );
   // $0.065/kWh (6.50¢) + 10 mils ($0.010 / 1.00¢) === $0.075/kWh (7.50¢)
   assert(
     applyMilsToCentsRate(6.5, 10) === 7.5,
     "$0.065/kWh (6.50¢) + 10 mils must equal $0.075/kWh (7.50¢)"
   );
-  const sampleMargin = computeBrokerMarginRevenue(10000, 8, 24);
+  const sampleMargin = computeBrokerMarginRevenue(6000, 8, 24);
   assert(
-    sampleMargin.monthlyMarginDollars === 80 &&
-      sampleMargin.totalTermMarginDollars === 1920,
-    "computeBrokerMarginRevenue must accurately compute monthly ($80) and 24m ($1,920) margin"
+    sampleMargin.monthlyMarginDollars === 48 &&
+      sampleMargin.totalTermMarginDollars === 1152,
+    "computeBrokerMarginRevenue must accurately compute monthly ($48) and 24m ($1,152) margin"
   );
 
   // Ensure client components, shared modules & API responses NEVER expose markup, margin, mils, raw EFL links, or raw basis anchors
-  const t3Sample = await queryTier("77002", 75000);
+  const t3Sample = await queryTier("77002", 15000);
   for (const [label, payload] of [
     ["Tier 1 /api/spark-match", t1],
-    ["Tier 2 /api/spark-match", t2Low],
     ["Tier 3 /api/spark-match", t3Sample],
     ["Tier 2 /api/submit-loe", t2LockJson],
     ["Tier 4 /api/submit-loe", t4Json],

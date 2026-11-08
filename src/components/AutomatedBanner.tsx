@@ -21,9 +21,10 @@ export const AutomatedBanner: React.FC = () => {
           </a>
         </p>
         <p className="text-[11px] text-slate-500">
-          Real-Time Daily Offers (1–1,999 &amp; 2,000–49,999 kWh/mo) • Live
-          Reservable C&amp;I Quotes &amp; 24-Hr Verification (50,000–3,000,000
-          kWh/mo) • © {new Date().getFullYear()} energychoice.us
+          Automatic Signup (Tier 1: 1,000–49,999 kWh Annually) • Live
+          Reservable Quotes &amp; 24-Hr Pricing/Usage Validation (Tiers 2–6:
+          50,000–3,000,000 kWh Annually) • © {new Date().getFullYear()}{" "}
+          energychoice.us
         </p>
       </div>
     </footer>

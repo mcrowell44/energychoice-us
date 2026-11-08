@@ -56,11 +56,7 @@ export const PlanComparisonGrid: React.FC<PlanComparisonGridProps> = ({
   if (!displayedPlans.length) return null;
 
   const isTier1 = tierId === "TIER_1";
-  const isReserve24Hr =
-    tierId === "TIER_3" ||
-    tierId === "TIER_4" ||
-    tierId === "TIER_5" ||
-    tierId === "TIER_6";
+  const isReserve24Hr = !isTier1;
   const isCommercialMatrix = !isTier1;
 
   return (

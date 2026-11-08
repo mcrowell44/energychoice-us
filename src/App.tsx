@@ -152,11 +152,11 @@ export const App: React.FC = () => {
           <div className="flex items-center gap-2.5">
             <span className="hidden md:inline-flex items-center gap-1.5 rounded-full border border-cyan-400/35 bg-cyan-400/10 px-3 py-1 text-[11px] font-mono text-cyan-300">
               <Radio className="h-3 w-3 text-[#00e5ff]" />
-              Real-Time: 1 – 49,999 kWh (18–72m)
+              Auto Signup: 1,000 – 49,999 kWh/yr
             </span>
             <span className="hidden lg:inline-flex items-center gap-1.5 rounded-full border border-sky-400/35 bg-sky-500/15 px-3 py-1 text-[11px] font-mono text-sky-200">
               <Clock className="h-3 w-3 text-sky-400" />
-              Live Reserve + 24-Hr Verify: 50k – 3M kWh
+              24-Hr Validation: 50k – 3M kWh/yr
             </span>
             <a
               href="#texas-deregulated-cities"
