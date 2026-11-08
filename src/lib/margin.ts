@@ -70,23 +70,3 @@ export function computeBrokerMarginRevenue(
   return { monthlyMarginDollars, totalTermMarginDollars };
 }
 
-/**
- * Shifts a raw wholesale benchmark string (e.g. "6.1¢ – 7.3¢ / kWh (Custom Wholesale Desk)")
- * upward by the tier's mils adder so the customer-facing benchmark already includes margin.
- */
-export function applyMilsToBenchmarkRange(
-  rawBenchmark: string,
-  mils: number
-): string {
-  const adderCents = mils * 0.1;
-  const match = rawBenchmark.match(
-    /(\d+(?:\.\d+)?)¢\s*[–-]\s*(\d+(?:\.\d+)?)¢(.*)$/
-  );
-  if (!match) return rawBenchmark;
-  const lowCents = Number(( parseFloat(match[1]) + adderCents ).toFixed(2));
-  const highCents = Number(( parseFloat(match[2]) + adderCents ).toFixed(2));
-  const lowDollars = (lowCents / 100).toFixed(4);
-  const highDollars = (highCents / 100).toFixed(4);
-  return `$${lowDollars} – $${highDollars}/kWh (${lowCents.toFixed(2)}¢ – ${highCents.toFixed(2)}¢)`;
-}
-

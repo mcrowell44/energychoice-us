@@ -12,7 +12,6 @@ import {
 } from "../lib/compliance";
 import { resolveTerritoryByZip } from "../lib/pricingTerritory";
 import {
-  applyMilsToBenchmarkRange,
   applyMilsToCentsRate,
   getTierMils,
 } from "../lib/margin";
@@ -274,32 +273,12 @@ function buildTier1PlansByTerm(
     return true;
   });
 
-  // Strip out TDSP delivery pass-through so Tier 1 starts strictly from True Energy Cost Rate only
-  const deliveryPassThrough = territory.tdspDeliveryEstimateCents;
-  const toTrueEnergyCost = (bundledOrRawCents: number): number => {
-    const stripped =
-      territory.isTexasErcot && bundledOrRawCents > deliveryPassThrough + 4.8
-        ? bundledOrRawCents - deliveryPassThrough
-        : bundledOrRawCents;
-    return Number(Math.max(5.5, Math.min(10.2, stripped)).toFixed(2));
-  };
-
-  // Anchor dynamic multi-term pricing directly off live gathered energy-only cost rates when available
-  let liveAnchor1000 = territory.tier1Base1000Cents;
-  if (cleanLive.length >= 3) {
-    const sortedRates = cleanLive
-      .map((p) => toTrueEnergyCost(Number(p.price_kwh1000)))
-      .sort((a, b) => a - b);
-    const sampleCount = Math.min(5, sortedRates.length);
-    const sum = sortedRates
-      .slice(0, sampleCount)
-      .reduce((acc, r) => acc + r, 0);
-    liveAnchor1000 = Number((sum / sampleCount).toFixed(2));
-  } else {
-    const todayDrift =
-      ((Math.floor(Date.now() / 86_400_000) % 7) - 3) * 0.04;
-    liveAnchor1000 = Number((liveAnchor1000 + todayDrift).toFixed(2));
-  }
+  // Start strictly from True Commercial Energy-Only Supply Cost Rate (no residential base, no delivery charges)
+  const todayDrift =
+    ((Math.floor(Date.now() / 86_400_000) % 7) - 3) * 0.04;
+  const commercialEnergyAnchor = Number(
+    (territory.commercialSupplyBaseCents + 0.15 + todayDrift).toFixed(2)
+  );
 
   const tier1Mils = getTierMils("TIER_1"); // 10 mils (+$0.010/kWh | +1.00¢/kWh)
   const plansByTerm: Record<string, SparkPlan[]> = {};
@@ -307,13 +286,18 @@ function buildTier1PlansByTerm(
   for (const term of CONTRACT_TERMS) {
     const liveForTerm = cleanLive
       .filter((p) => Number(p.term_value) === term)
-      .map((p): SparkPlan => {
-        const rawEnergy1000 = toTrueEnergyCost(Number(p.price_kwh1000));
+      .map((p, idx): SparkPlan => {
+        const template =
+          TIER1_SUPPLIER_CURVES[idx % TIER1_SUPPLIER_CURVES.length];
+        const termShift = template.termAdjustments[term];
         const rawEnergy500 = Number(
-          Math.max(rawEnergy1000 + 0.18, toTrueEnergyCost(Number(p.price_kwh500)) - 0.25).toFixed(2)
+          (commercialEnergyAnchor + template.delta500 + termShift).toFixed(2)
+        );
+        const rawEnergy1000 = Number(
+          (commercialEnergyAnchor + template.delta1000 + termShift).toFixed(2)
         );
         const rawEnergy2000 = Number(
-          Math.min(rawEnergy1000 - 0.12, toTrueEnergyCost(Number(p.price_kwh2000))).toFixed(2)
+          (commercialEnergyAnchor + template.delta2000 + termShift).toFixed(2)
         );
 
         const r500 = applyMilsToCentsRate(rawEnergy500, tier1Mils);
@@ -349,7 +333,7 @@ function buildTier1PlansByTerm(
             },
           ],
           rate_structure_note:
-            "Fixed Energy Supply Rate (Excludes Utility Delivery & Pass-Through Fees)",
+            "Fixed Commercial Energy Supply Rate (Excludes Utility Delivery & Fees)",
           applied_tier_label: appliedTierLabel,
           est_monthly_bill: computeBill(effectiveRateCents, usageKwh),
           renewable_pct: Math.min(
@@ -376,7 +360,7 @@ function buildTier1PlansByTerm(
     );
 
     // Supplement with real-time curve-calibrated supplier quotes so every term (18, 24, 36, 48, 60, 72)
-    // offers a full expanded slate of 8 competing options anchored to today's gathered market data
+    // offers a full expanded slate of 8 competing options anchored to today's commercial energy cost rate
     for (const sup of TIER1_SUPPLIER_CURVES) {
       if (combined.length >= QUOTES_PER_TERM) break;
       const alreadyListed = combined.some((existing) =>
@@ -388,15 +372,15 @@ function buildTier1PlansByTerm(
 
       const termShift = sup.termAdjustments[term];
       const r500 = applyMilsToCentsRate(
-        liveAnchor1000 + sup.delta500 + termShift,
+        commercialEnergyAnchor + sup.delta500 + termShift,
         tier1Mils
       );
       const r1000 = applyMilsToCentsRate(
-        liveAnchor1000 + sup.delta1000 + termShift,
+        commercialEnergyAnchor + sup.delta1000 + termShift,
         tier1Mils
       );
       const r2000 = applyMilsToCentsRate(
-        liveAnchor1000 + sup.delta2000 + termShift,
+        commercialEnergyAnchor + sup.delta2000 + termShift,
         tier1Mils
       );
 
@@ -422,7 +406,7 @@ function buildTier1PlansByTerm(
           { label: "2,000 kWh", rate_cents: r2000, is_active: activeCol === 2 },
         ],
         rate_structure_note:
-          "Fixed Energy Supply Rate (Excludes Utility Delivery & Pass-Through Fees)",
+          "Fixed Commercial Energy Supply Rate (Excludes Utility Delivery & Fees)",
         applied_tier_label: appliedTierLabel,
         est_monthly_bill: computeBill(effectiveRateCents, usageKwh),
         renewable_pct: sup.green,
@@ -554,40 +538,21 @@ async function buildTier2CommercialPlansByTerm(
 }> {
   const territory = resolveTerritoryByZip(zipCode);
   let liveTduName: string | undefined;
-  let commercialAnchor = territory.tier2CommercialBaseCents;
 
   if (territory.isTexasErcot) {
     const liveRaw = await fetchTexasPlansWithHubFallback(zipCode);
     if (liveRaw && liveRaw.length > 0) {
       liveTduName = liveRaw[0]?.company_tdu_name;
-      const valid2000 = liveRaw
-        .filter(
-          (p) =>
-            String(p.rate_type ?? "").toLowerCase() === "fixed" &&
-            !p.prepaid &&
-            !p.timeofuse &&
-            !p.minimum_usage &&
-            Number(p.term_value ?? 0) >= 18 &&
-            Number(p.price_kwh2000) > 6
-        )
-        .map((p) => Number(p.price_kwh2000))
-        .sort((a, b) => a - b);
-
-      if (valid2000.length >= 3) {
-        const top3Avg = (valid2000[0] + valid2000[1] + valid2000[2]) / 3;
-        const derivedEnergyOnly = top3Avg - territory.tdspDeliveryEstimateCents;
-        commercialAnchor = Number(
-          Math.max(5.85, Math.min(9.95, derivedEnergyOnly)).toFixed(2)
-        );
-      }
     }
-  } else {
-    const todayDrift =
-      ((Math.floor(Date.now() / 86_400_000) % 7) - 3) * 0.04;
-    commercialAnchor = Number((commercialAnchor + todayDrift).toFixed(2));
   }
 
-  const tier2Mils = getTierMils("TIER_2"); // 9 mils (+$0.009/kWh | +0.90¢/kWh)
+  const todayDrift =
+    ((Math.floor(Date.now() / 86_400_000) % 7) - 3) * 0.04;
+  const commercialAnchor = Number(
+    (territory.commercialSupplyBaseCents + todayDrift).toFixed(2)
+  );
+
+  const tier2Mils = getTierMils("TIER_2"); // 8 mils (+$0.008/kWh | +0.80¢/kWh)
   const plansByTerm: Record<string, SparkPlan[]> = {};
 
   for (const term of CONTRACT_TERMS) {
@@ -638,9 +603,8 @@ async function buildTier2CommercialPlansByTerm(
             is_active: activeBandIndex === 2,
           },
         ],
-        rate_structure_note: territory.isTexasErcot
-          ? "Energy-Only Commercial Matrix (+ TDSP Delivery Pass-Through)"
-          : "Commercial Fixed Supply Matrix (+ Utility Delivery Tariff)",
+        rate_structure_note:
+          "Fixed Commercial Energy Supply Matrix (Excludes Utility Delivery & Fees)",
         applied_tier_label: appliedTierLabel,
         est_monthly_bill: computeBill(effectiveRateCents, usageKwh),
         renewable_pct: s.green,
@@ -706,40 +670,21 @@ async function buildLargeCiPlansByTerm(
 }> {
   const territory = resolveTerritoryByZip(zipCode);
   let liveTduName: string | undefined;
-  let commercialAnchor = territory.tier2CommercialBaseCents;
 
   if (territory.isTexasErcot) {
     const liveRaw = await fetchTexasPlansWithHubFallback(zipCode);
     if (liveRaw && liveRaw.length > 0) {
       liveTduName = liveRaw[0]?.company_tdu_name;
-      const valid2000 = liveRaw
-        .filter(
-          (p) =>
-            String(p.rate_type ?? "").toLowerCase() === "fixed" &&
-            !p.prepaid &&
-            !p.timeofuse &&
-            !p.minimum_usage &&
-            Number(p.term_value ?? 0) >= 18 &&
-            Number(p.price_kwh2000) > 6
-        )
-        .map((p) => Number(p.price_kwh2000))
-        .sort((a, b) => a - b);
-
-      if (valid2000.length >= 3) {
-        const top3Avg = (valid2000[0] + valid2000[1] + valid2000[2]) / 3;
-        const derivedEnergyOnly = top3Avg - territory.tdspDeliveryEstimateCents;
-        commercialAnchor = Number(
-          Math.max(5.85, Math.min(9.95, derivedEnergyOnly)).toFixed(2)
-        );
-      }
     }
-  } else {
-    const todayDrift =
-      ((Math.floor(Date.now() / 86_400_000) % 7) - 3) * 0.04;
-    commercialAnchor = Number((commercialAnchor + todayDrift).toFixed(2));
   }
 
-  const tierMils = getTierMils(tierId); // TIER_3=8, TIER_4=6, TIER_5=5, TIER_6=3
+  const todayDrift =
+    ((Math.floor(Date.now() / 86_400_000) % 7) - 3) * 0.04;
+  const commercialAnchor = Number(
+    (territory.commercialSupplyBaseCents + todayDrift).toFixed(2)
+  );
+
+  const tierMils = getTierMils(tierId); // TIER_3=7, TIER_4=5, TIER_5=4, TIER_6=3
   const cfg = LARGE_CI_TIER_CONFIG[tierId];
   const activeIdx: 0 | 1 | 2 =
     usageKwh < cfg.cutoffs[0] ? 0 : usageKwh < cfg.cutoffs[1] ? 1 : 2;
@@ -809,9 +754,8 @@ async function buildLargeCiPlansByTerm(
             is_active: activeIdx === 2,
           },
         ],
-        rate_structure_note: territory.isTexasErcot
-          ? "Reserved C&I Fixed Supply Quote (+ TDSP Pass-Through • 24-Hr Verification)"
-          : "Reserved C&I Fixed Supply Quote (+ Utility Delivery • 24-Hr Verification)",
+        rate_structure_note:
+          "Reserved C&I Fixed Energy Supply Rate (24-Hr Verification • Excludes Delivery & Fees)",
         applied_tier_label: appliedTierLabel,
         est_monthly_bill: computeBill(effectiveRateCents, usageKwh),
         renewable_pct: s.green,
@@ -869,12 +813,17 @@ export default async function handler(req: Request): Promise<Response> {
       tierSpec.id === "TIER_5" ||
       tierSpec.id === "TIER_6"
     ) {
-      const customDeskMils = getTierMils(tierSpec.id);
       const { tduName, plansByTerm } = await buildLargeCiPlansByTerm(
         zip_code,
         usage,
         tierSpec.id
       );
+
+      const activePlans = plansByTerm[String(selectedTerm)] || plansByTerm["18"];
+      const lowCents = activePlans[0]?.rate_per_kwh_cents ?? territoryInfo.commercialSupplyBaseCents;
+      const highCents =
+        activePlans[activePlans.length - 1]?.rate_per_kwh_cents ?? lowCents;
+      const liveRangeLabel = `$${(lowCents / 100).toFixed(4)} – $${(highCents / 100).toFixed(4)}/kWh (${lowCents.toFixed(2)}¢ – ${highCents.toFixed(2)}¢)`;
 
       const response: SparkMatchResponse = {
         mode: "CUSTOM_24HR_LOE",
@@ -887,16 +836,13 @@ export default async function handler(req: Request): Promise<Response> {
         iso: territoryInfo.iso,
         annualized_kwh: usage * 12,
         commercial_tier_label: `${tierSpec.shortName}: ${tierSpec.rangeLabel} (${tierSpec.subLabel})`,
-        indicative_rate_range: applyMilsToBenchmarkRange(
-          territoryInfo.deskRangeBasis,
-          customDeskMils
-        ),
+        indicative_rate_range: liveRangeLabel,
         engine: "live-commercial-matrix",
         fetched_at: fetchedAt,
         disclosure: process.env.DEFAULT_DISCLOSURE || STANDARD_DISCLOSURE,
         selected_term_months: selectedTerm,
         available_terms: [...CONTRACT_TERMS],
-        plans: plansByTerm[String(selectedTerm)] || plansByTerm["18"],
+        plans: activePlans,
         plans_by_term: plansByTerm,
       };
 

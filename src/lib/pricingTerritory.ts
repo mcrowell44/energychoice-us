@@ -1,16 +1,17 @@
 /**
  * SERVER-ONLY TERRITORY PRICING ANCHORS
+ * True Commercial Energy-Only Supply Cost Rates (¢/kWh) before Tier Mils Markup.
+ * Excludes all TDSP/utility delivery charges, surcharges, and residential fees.
  * Never import this module into client-side components.
  */
-export function resolveTerritoryByZip(zip: string): {
+export interface TerritoryCommercialProfile {
   region: string;
   iso: string;
   isTexasErcot: boolean;
-  tdspDeliveryEstimateCents: number;
-  tier1Base1000Cents: number;
-  tier2CommercialBaseCents: number;
-  deskRangeBasis: string;
-} {
+  commercialSupplyBaseCents: number;
+}
+
+export function resolveTerritoryByZip(zip: string): TerritoryCommercialProfile {
   const prefix = parseInt(zip.slice(0, 3), 10);
 
   if (prefix >= 750 && prefix <= 759) {
@@ -18,10 +19,7 @@ export function resolveTerritoryByZip(zip: string): {
       region: "North Texas (Oncor TDSP)",
       iso: "ERCOT",
       isTexasErcot: true,
-      tdspDeliveryEstimateCents: 4.35,
-      tier1Base1000Cents: 7.65,
-      tier2CommercialBaseCents: 7.45,
-      deskRangeBasis: "6.1¢ – 7.3¢ / kWh",
+      commercialSupplyBaseCents: 7.45,
     };
   }
   if (prefix >= 760 && prefix <= 769) {
@@ -29,10 +27,7 @@ export function resolveTerritoryByZip(zip: string): {
       region: "DFW West / Central Texas (Oncor / TNMP)",
       iso: "ERCOT",
       isTexasErcot: true,
-      tdspDeliveryEstimateCents: 4.45,
-      tier1Base1000Cents: 7.75,
-      tier2CommercialBaseCents: 7.55,
-      deskRangeBasis: "6.2¢ – 7.4¢ / kWh",
+      commercialSupplyBaseCents: 7.55,
     };
   }
   if (prefix >= 770 && prefix <= 779) {
@@ -40,10 +35,7 @@ export function resolveTerritoryByZip(zip: string): {
       region: "Houston Metro / Gulf Coast (CenterPoint / TNMP)",
       iso: "ERCOT",
       isTexasErcot: true,
-      tdspDeliveryEstimateCents: 4.55,
-      tier1Base1000Cents: 7.85,
-      tier2CommercialBaseCents: 7.65,
-      deskRangeBasis: "6.3¢ – 7.6¢ / kWh",
+      commercialSupplyBaseCents: 7.65,
     };
   }
   if (prefix >= 780 && prefix <= 799) {
@@ -51,10 +43,7 @@ export function resolveTerritoryByZip(zip: string): {
       region: "South & West Texas (AEP Texas / TNMP)",
       iso: "ERCOT",
       isTexasErcot: true,
-      tdspDeliveryEstimateCents: 4.75,
-      tier1Base1000Cents: 8.0,
-      tier2CommercialBaseCents: 7.8,
-      deskRangeBasis: "6.4¢ – 7.8¢ / kWh",
+      commercialSupplyBaseCents: 7.8,
     };
   }
   if (prefix >= 150 && prefix <= 196) {
@@ -62,10 +51,7 @@ export function resolveTerritoryByZip(zip: string): {
       region: "Pennsylvania (PECO / PPL / FirstEnergy)",
       iso: "PJM",
       isTexasErcot: false,
-      tdspDeliveryEstimateCents: 0,
-      tier1Base1000Cents: 8.55,
-      tier2CommercialBaseCents: 8.35,
-      deskRangeBasis: "6.9¢ – 8.2¢ / kWh",
+      commercialSupplyBaseCents: 8.35,
     };
   }
   if (prefix >= 430 && prefix <= 459) {
@@ -73,10 +59,7 @@ export function resolveTerritoryByZip(zip: string): {
       region: "Ohio (AEP Ohio / Duke / FirstEnergy)",
       iso: "PJM",
       isTexasErcot: false,
-      tdspDeliveryEstimateCents: 0,
-      tier1Base1000Cents: 7.45,
-      tier2CommercialBaseCents: 7.25,
-      deskRangeBasis: "5.9¢ – 7.1¢ / kWh",
+      commercialSupplyBaseCents: 7.25,
     };
   }
   if (prefix >= 600 && prefix <= 629) {
@@ -84,10 +67,7 @@ export function resolveTerritoryByZip(zip: string): {
       region: "Illinois (ComEd / Ameren)",
       iso: "PJM/MISO",
       isTexasErcot: false,
-      tdspDeliveryEstimateCents: 0,
-      tier1Base1000Cents: 7.95,
-      tier2CommercialBaseCents: 7.75,
-      deskRangeBasis: "6.4¢ – 7.6¢ / kWh",
+      commercialSupplyBaseCents: 7.75,
     };
   }
   if (prefix >= 100 && prefix <= 149) {
@@ -95,10 +75,7 @@ export function resolveTerritoryByZip(zip: string): {
       region: "New York (ConEd / National Grid)",
       iso: "NYISO",
       isTexasErcot: false,
-      tdspDeliveryEstimateCents: 0,
-      tier1Base1000Cents: 10.35,
-      tier2CommercialBaseCents: 10.15,
-      deskRangeBasis: "8.5¢ – 10.1¢ / kWh",
+      commercialSupplyBaseCents: 10.15,
     };
   }
   if (prefix >= 70 && prefix <= 89) {
@@ -106,10 +83,7 @@ export function resolveTerritoryByZip(zip: string): {
       region: "New Jersey (PSE&G / JCP&L)",
       iso: "PJM",
       isTexasErcot: false,
-      tdspDeliveryEstimateCents: 0,
-      tier1Base1000Cents: 9.45,
-      tier2CommercialBaseCents: 9.25,
-      deskRangeBasis: "7.8¢ – 9.1¢ / kWh",
+      commercialSupplyBaseCents: 9.25,
     };
   }
   if (prefix >= 206 && prefix <= 219) {
@@ -117,10 +91,7 @@ export function resolveTerritoryByZip(zip: string): {
       region: "Maryland (BGE / Pepco)",
       iso: "PJM",
       isTexasErcot: false,
-      tdspDeliveryEstimateCents: 0,
-      tier1Base1000Cents: 9.15,
-      tier2CommercialBaseCents: 8.95,
-      deskRangeBasis: "7.5¢ – 8.8¢ / kWh",
+      commercialSupplyBaseCents: 8.95,
     };
   }
   if (prefix >= 10 && prefix <= 27) {
@@ -128,10 +99,7 @@ export function resolveTerritoryByZip(zip: string): {
       region: "Massachusetts (Eversource / National Grid)",
       iso: "ISO-NE",
       isTexasErcot: false,
-      tdspDeliveryEstimateCents: 0,
-      tier1Base1000Cents: 12.15,
-      tier2CommercialBaseCents: 11.95,
-      deskRangeBasis: "10.2¢ – 11.8¢ / kWh",
+      commercialSupplyBaseCents: 11.95,
     };
   }
 
@@ -139,10 +107,6 @@ export function resolveTerritoryByZip(zip: string): {
     region: "US Deregulated Supply Desk",
     iso: "NATIONAL",
     isTexasErcot: false,
-    tdspDeliveryEstimateCents: 0,
-    tier1Base1000Cents: 8.65,
-    tier2CommercialBaseCents: 8.45,
-    deskRangeBasis: "6.8¢ – 8.3¢ / kWh",
+    commercialSupplyBaseCents: 8.45,
   };
 }
-
