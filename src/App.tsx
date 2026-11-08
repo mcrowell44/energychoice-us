@@ -3,17 +3,22 @@ import { Clock, Info, MapPin, Radio } from "lucide-react";
 import { IntakeHero } from "./components/IntakeHero";
 import { PlanComparisonGrid } from "./components/PlanComparisonGrid";
 import { CommercialLoeIntake } from "./components/CommercialLoeIntake";
+import {
+  SignupConfirmationModal,
+  type ConfirmationRecord,
+} from "./components/SignupConfirmationModal";
 import { TexasDeregulatedCitiesDirectory } from "./components/TexasDeregulatedCitiesDirectory";
 import { AutomatedBanner } from "./components/AutomatedBanner";
 import {
   ADMIN_NOTIFICATION_EMAIL,
   STANDARD_DISCLOSURE,
   type ContractTermMonths,
-  type ExecutionRecord,
   type SparkMatchResponse,
   type SparkPlan,
 } from "./lib/compliance";
 import type { TexasDeregulatedCity } from "./lib/texasDeregulatedCities";
+
+const CONFIRMATION_STORAGE_KEY = "ec_active_confirmation";
 
 export const App: React.FC = () => {
   const [loading, setLoading] = useState(false);
@@ -34,10 +39,40 @@ export const App: React.FC = () => {
     null
   );
   const [selectedPlan, setSelectedPlan] = useState<SparkPlan | null>(null);
-  const [capturedRecords, setCapturedRecords] = useState<ExecutionRecord[]>([]);
+  const [activeConfirmation, setActiveConfirmation] =
+    useState<ConfirmationRecord | null>(() => {
+      try {
+        const saved = sessionStorage.getItem(CONFIRMATION_STORAGE_KEY);
+        return saved ? (JSON.parse(saved) as ConfirmationRecord) : null;
+      } catch {
+        return null;
+      }
+    });
 
   const resultsRef = useRef<HTMLDivElement>(null);
   const checkoutRef = useRef<HTMLDivElement>(null);
+
+  const handleOpenConfirmation = (record: ConfirmationRecord) => {
+    try {
+      sessionStorage.setItem(CONFIRMATION_STORAGE_KEY, JSON.stringify(record));
+    } catch {
+      // Ignore storage quota issues
+    }
+    setSelectedPlan(null);
+    setMatchResult(null);
+    setActiveConfirmation(record);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleCloseConfirmation = () => {
+    try {
+      sessionStorage.removeItem(CONFIRMATION_STORAGE_KEY);
+    } catch {
+      // Ignore
+    }
+    setActiveConfirmation(null);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const handleClearResults = () => {
     setMatchResult(null);
@@ -245,72 +280,17 @@ export const App: React.FC = () => {
               indicativeRateRange={matchResult.indicative_rate_range}
               initialTermMonths={activeTerm}
               selectedPlan={selectedPlan}
-              onLoeSubmitted={(record) =>
-                setCapturedRecords((prev) => [record, ...prev])
-              }
+              onLoeSubmitted={handleOpenConfirmation}
             />
           )}
         </div>
 
-        {/* Captured Prospects & Executed LOEs Session Ledger */}
-        {capturedRecords.length > 0 && (
-          <section className="mt-10 rounded-2xl border border-[#0e2d5c] bg-[#031129]/80 p-5">
-            <h4 className="text-xs font-mono uppercase tracking-wider text-cyan-300 mb-3">
-              Captured Prospects &amp; Executed LOEs (Session Pipeline)
-            </h4>
-            <div className="space-y-2">
-              {capturedRecords.map((rec, i) => (
-                <div
-                  key={`${rec.confirmationId}-${i}`}
-                  className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[#0e2d5c] bg-[#010a1a] px-4 py-2.5 text-xs font-mono"
-                >
-                  <span
-                    className={
-                      rec.flow === "CUSTOM_24HR_LOE"
-                        ? "text-sky-300 font-semibold"
-                        : "text-[#00e5ff] font-semibold"
-                    }
-                  >
-                    {rec.confirmationId}
-                  </span>
-                  {rec.flow === "TIER1_1_1999_KWH" ? (
-                    <span className="text-slate-200">
-                      Tier 1 ({rec.termMonths}m) •{" "}
-                      {rec.allocatedKwh.toLocaleString()} kWh/mo @{" "}
-                      {rec.rateCents.toFixed(2)}¢ ({rec.provider})
-                    </span>
-                  ) : rec.flow === "TIER2_REALTIME_LOE" ? (
-                    <span className="text-slate-200">
-                      Rate Lock ({rec.selectedTermMonths}m) •{" "}
-                      {rec.businessName} • {rec.monthlyKwh.toLocaleString()}{" "}
-                      kWh/mo @ $
-                      {((rec.selectedRateCents || 0) / 100).toFixed(4)}/kWh (
-                      {rec.selectedProvider})
-                    </span>
-                  ) : rec.selectedProvider && rec.selectedRateCents ? (
-                    <span className="text-slate-200">
-                      Reserved Quote ({rec.selectedTermMonths}m • 24-Hr Verify)
-                      • {rec.businessName} • {rec.monthlyKwh.toLocaleString()}{" "}
-                      kWh/mo @ $
-                      {(rec.selectedRateCents / 100).toFixed(4)}/kWh (
-                      {rec.selectedProvider})
-                    </span>
-                  ) : (
-                    <span className="text-slate-200">
-                      24-Hr Quote ({rec.tierRangeLabel} •{" "}
-                      {(rec.requestedTerms || [18, 24, 36, 48, 60, 72]).join(
-                        "/"
-                      )}
-                      m) • {rec.businessName}
-                    </span>
-                  )}
-                  <span className="text-slate-400">
-                    {rec.contactEmail} • {rec.contactPhone}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </section>
+        {/* Dedicated Full-Screen Confirmation Page / Popup Modal with Close CTA */}
+        {activeConfirmation && (
+          <SignupConfirmationModal
+            record={activeConfirmation}
+            onClose={handleCloseConfirmation}
+          />
         )}
 
         {/* Complete List of Deregulated Cities in Texas Directory */}
