@@ -4,6 +4,7 @@ dist/
 .env
 .env.local
 .env.*.local
+AGENTS.md
 data/
 *.tsbuildinfo
 *.pdf
