@@ -40,13 +40,13 @@ async function queryTier(zip: string, kwh: number) {
 async function runQaSuite() {
   console.log("Running Energy Choice US 6-Tier Automated QA Suite...\n");
 
-  // 1. Tier 1 (1,000 – 49,999 kWh Annually | ~83 – 4,166 kWh/mo): Automatic Real-Time Offer Across 18, 24, 36, 48, 60, 72 Mos
+  // 1. Tier 1 (12,000 – 49,999 kWh Annually | 1,000 – 4,166 kWh/mo): Automatic Real-Time Offer Across 18, 24, 36, 48, 60, 72 Mos
   const t1 = await queryTier("75068", 1250); // 15,000 kWh/yr
   const t1High = await queryTier("75068", 4000); // 48,000 kWh/yr (still Tier 1)
   assert(
     t1.mode === "TIER1_REALTIME" &&
       t1.tier_id === "TIER_1" &&
-      t1.tier_range_label === "1,000 – 49,999 kWh Annually" &&
+      t1.tier_range_label === "12,000 – 49,999 kWh Annually" &&
       t1.turnaround_sla === "REAL_TIME" &&
       t1.plans.length === 8,
     "Tier 1 (1,250 kWh/mo = 15,000 kWh/yr) must return TIER1_REALTIME with 8 expanded competing plans"
@@ -72,7 +72,7 @@ async function runQaSuite() {
     "Tier 1 lead rates must dynamically vary across 18–72 month terms"
   );
   console.log(
-    `✅ [PASS] Tier 1 Automatic Signup (1,000–49,999 kWh/yr • 8 per term) — Lead Curve: ${CONTRACT_TERMS.map((tm, i) => `${tm}m=${t1RatesAcrossTerms[i]}¢`).join(" | ")}`
+    `✅ [PASS] Tier 1 Automatic Signup (12,000–49,999 kWh/yr • 8 per term) — Lead Curve: ${CONTRACT_TERMS.map((tm, i) => `${tm}m=${t1RatesAcrossTerms[i]}¢`).join(" | ")}`
   );
 
   // 2 & 3. Tiers 2, 3, 4, 5, 6 (50,000 – 3,000,000 kWh Annually): Live Multi-Term Quotes to Reserve for 24-Hour Pricing & Usage Validation

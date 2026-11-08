@@ -6,7 +6,7 @@ import { resolveUsageTier, type UsageTierId } from "./compliance";
  * Example: $0.065/kWh (6.50¢) + 10 mils ($0.010 / 1.00¢) = $0.075/kWh (7.50¢)
  *
  * Descending Mils by Annual kWh Usage Tier (Added to True Energy Cost Rate Only):
- * - Tier 1 (1,000 – 49,999 kWh/yr):          10 mils (+$0.010/kWh | +1.00¢/kWh) — Automatic Signup
+ * - Tier 1 (12,000 – 49,999 kWh/yr):         10 mils (+$0.010/kWh | +1.00¢/kWh) — Automatic Signup
  * - Tier 2 (50,000 – 99,999 kWh/yr):          8 mils (+$0.008/kWh | +0.80¢/kWh) — 24-Hr Validation
  * - Tier 3 (100,000 – 299,999 kWh/yr):        7 mils (+$0.007/kWh | +0.70¢/kWh) — 24-Hr Validation
  * - Tier 4 (300,000 – 499,999 kWh/yr):        5 mils (+$0.005/kWh | +0.50¢/kWh) — 24-Hr Validation

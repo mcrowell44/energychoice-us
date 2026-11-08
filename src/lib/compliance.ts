@@ -40,11 +40,11 @@ export const USAGE_TIERS: UsageTierSpec[] = [
   {
     id: "TIER_1",
     shortName: "Tier 1",
-    rangeLabel: "1,000 – 49,999 kWh Annually",
-    subLabel: "Automatic Signup (~83 – 4,166 kWh/mo)",
-    minAnnualKwh: 1000,
+    rangeLabel: "12,000 – 49,999 kWh Annually",
+    subLabel: "Automatic Signup (1,000 – 4,166 kWh/mo)",
+    minAnnualKwh: 12000,
     maxAnnualKwh: 49999,
-    minKwh: 1,
+    minKwh: 1000,
     maxKwh: 4166,
     presetKwh: 2000,
     isRealTime: true,
@@ -247,7 +247,7 @@ export type ExecutionRecord =
 
 /**
  * Computes the effective ¢/kWh rate across the Tier 1 sub-bands
- * for Tier 1 (1,000 – 49,999 kWh Annually | ~83 – 4,166 kWh/month) meters.
+ * for Tier 1 (12,000 – 49,999 kWh Annually | 1,000 – 4,166 kWh/month) meters.
  */
 export function interpolateTier1Rate(
   usageKwh: number,

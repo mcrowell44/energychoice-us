@@ -770,7 +770,7 @@ export default async function handler(req: Request): Promise<Response> {
       });
     }
 
-    // TIER 1 (1,000 – 49,999 kWh Annually): Automatic Real-Time Signup Across 18, 24, 36, 48, 60, 72 Mos
+    // TIER 1 (12,000 – 49,999 kWh Annually): Automatic Real-Time Signup Across 18, 24, 36, 48, 60, 72 Mos
     const liveRaw = territoryInfo.isTexasErcot
       ? await fetchTexasPlansWithHubFallback(zip_code)
       : null;

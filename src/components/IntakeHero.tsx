@@ -442,13 +442,13 @@ export const IntakeHero: React.FC<IntakeHeroProps> = ({
             </div>
           </div>
 
-          {/* Group 1: Tier 1 Automatic Signup (1,000 – 49,999 kWh Annually) */}
+          {/* Group 1: Tier 1 Automatic Signup (12,000 – 49,999 kWh Annually) */}
           <div className="space-y-4">
             <div>
               <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                 <span className="inline-flex items-center gap-1.5 text-xs uppercase tracking-wider font-mono text-[#00e5ff]">
                   <Zap className="h-3.5 w-3.5" />
-                  Tier 1 Automatic Signup (1,000 – 49,999 kWh Annually)
+                  Tier 1 Automatic Signup (12,000 – 49,999 kWh Annually)
                 </span>
                 <span className="text-[11px] font-mono text-cyan-300/90">
                   Immediate Rate Lock &amp; Signup
