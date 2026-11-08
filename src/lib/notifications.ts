@@ -30,6 +30,40 @@ export function resolveDossierEmail(): string {
   return BROKER_DOSSIER_RECIPIENT;
 }
 
+function buildCustomerReceiptText(
+  record: CommercialLoePayload & { confirmationId: string }
+): string {
+  const isRealtime = record.turnaroundSla === "REAL_TIME";
+  const rateDollars = record.selectedRateCents
+    ? (record.selectedRateCents / 100).toFixed(4)
+    : "—";
+
+  return [
+    `ENERGY CHOICE US — OFFICIAL CONFIRMATION RECEIPT`,
+    `Confirmation ID: ${record.confirmationId}`,
+    `------------------------------------------------------------`,
+    `Business Name:         ${record.businessName}`,
+    `Authorized Signer:     ${record.authorizedSignerName} (${record.signerTitle})`,
+    `Service Territory:     ${record.territory} (ZIP ${record.zipCode})`,
+    `Annual Usage Tier:     ${record.tierRangeLabel}`,
+    `Selected Provider:     ${record.selectedProvider || "Custom 24-Hr Bidding Desk"}`,
+    `Contract Term:         ${record.selectedTermMonths ? `${record.selectedTermMonths} Months` : "Multi-Term Bidding"}`,
+    `Fixed Energy Rate:     $${rateDollars}/kWh (${record.selectedRateCents ? `${record.selectedRateCents.toFixed(2)}¢` : "Pending"})`,
+    `Uploaded Bill:         ${record.billFileName}`,
+    `Status:                ${isRealtime ? "Rate Lock & LOE Executed" : "Rate Quote Reserved • 24-Hr Validation Active"}`,
+    ``,
+    `NEXT STEPS:`,
+    isRealtime
+      ? `Your rate lock has been paired with your utility statement and submitted for final supplier registration. Enrollment copies will be finalized and sent to ${record.contactEmail}.`
+      : `Your selected rate is held for 24-hour pricing & usage validation against your uploaded electric utility bill. Within 24 hours, our desk will verify meter compatibility and email your final contract documents directly to ${record.contactEmail}.`,
+    ``,
+    `------------------------------------------------------------`,
+    `Energy Choice US Desk: ${DEFAULT_FROM_ADDRESS}`,
+    `Website: https://energychoice.us`,
+    `Speed to need is the motto.`,
+  ].join("\n");
+}
+
 /**
  * Builds HTML for customer confirmation receipt (strictly energy rate, zero internal markup)
  */
@@ -116,6 +150,62 @@ function buildCustomerReceiptHtml(
 </body>
 </html>
   `;
+}
+
+function buildBrokerDossierText(
+  record: CommercialLoePayload & { confirmationId: string },
+  mils: number,
+  adderDollarsPerKwh: number,
+  adderCentsPerKwh: number,
+  monthlyMarginDollars: number,
+  totalTermMarginDollars: number,
+  benchmarkTerm: number,
+  rawCommercialCents?: number
+): string {
+  const offeredDollars = record.selectedRateCents
+    ? (record.selectedRateCents / 100).toFixed(4)
+    : "Custom Bid";
+  const rawDollars = rawCommercialCents
+    ? (rawCommercialCents / 100).toFixed(4)
+    : "—";
+
+  return [
+    `BROKER INTAKE DOSSIER — CONFIDENTIAL CORPORATE AUDIT`,
+    `Confirmation ID: ${record.confirmationId}`,
+    `Timestamp:       ${record.timestamp}`,
+    `------------------------------------------------------------`,
+    `1. CUSTOMER & ACCOUNT DETAILS`,
+    `Business Name:       ${record.businessName}`,
+    `Authorized Signer:   ${record.authorizedSignerName} (${record.signerTitle})`,
+    `Contact Email:       ${record.contactEmail}`,
+    `Contact Phone:       ${record.contactPhone}`,
+    `Service Location:    ZIP ${record.zipCode} • ${record.territory}`,
+    `Current Provider:    ${record.currentProvider || "Not Specified"}`,
+    `Monthly Volume:      ${record.monthlyKwh.toLocaleString()} kWh/mo (${record.annualizedKwh.toLocaleString()} kWh/yr)`,
+    `Usage Tier:          ${record.commercialTierLabel}`,
+    `SLA / Flow:          ${record.turnaroundSla === "REAL_TIME" ? "Real-Time Automatic Lock" : "24-Hour Pricing & Usage Validation"}`,
+    ``,
+    `2. RATE QUOTE & SELECTED TERMS`,
+    `Selected Supplier:   ${record.selectedProvider || "Custom 24-Hr Desk"}`,
+    `Plan Name:           ${record.selectedPlanName || "Custom Bidding Strip"}`,
+    `Contract Term:       ${record.selectedTermMonths ? `${record.selectedTermMonths} Months` : (record.requestedTerms || []).join(", ") + " Months"}`,
+    `Customer Rate:       $${offeredDollars}/kWh (${record.selectedRateCents ? `${record.selectedRateCents.toFixed(2)}¢` : "Pending"})`,
+    `Est. Monthly Bill:   $${record.estMonthlyBill ? record.estMonthlyBill.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "—"}/mo`,
+    ``,
+    `3. CONFIDENTIAL CORPORATE BROKER MARGIN BREAKDOWN`,
+    `Assigned Tier Mils:  +${mils} mils (+$${adderDollarsPerKwh.toFixed(3)}/kWh | +${adderCentsPerKwh.toFixed(2)}¢/kWh)`,
+    `Customer Offered:    $${offeredDollars}/kWh`,
+    `Raw Supplier Basis:  $${rawDollars}/kWh`,
+    `Est. Monthly Margin: $${monthlyMarginDollars.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}/mo`,
+    `Est. Full-Term (${benchmarkTerm}m): $${totalTermMarginDollars.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+    ``,
+    `4. LOE LEGAL AUTHORIZATION & VERIFICATION`,
+    `E-Signature:         ${record.loeSignature}`,
+    `Signer Initials:     ${record.loeSignerInitials}`,
+    `LOE Checkbox:        VERIFIED & EXECUTED ✓`,
+    `Attached Bill:       ${record.billFileName} (${Math.round(record.billFileSizeBytes / 1024)} KB)`,
+    `------------------------------------------------------------`,
+  ].join("\n");
 }
 
 /**
@@ -324,6 +414,16 @@ export async function notifyAdminCommercialLoe(
       benchmarkTerm,
       rawCommercialCents
     );
+    const dossierText = buildBrokerDossierText(
+      record,
+      mils,
+      adderDollarsPerKwh,
+      adderCentsPerKwh,
+      monthlyMarginDollars,
+      totalTermMarginDollars,
+      benchmarkTerm,
+      rawCommercialCents
+    );
 
     await sendHostingerSmtp({
       fromAddress: DEFAULT_FROM_ADDRESS,
@@ -331,6 +431,7 @@ export async function notifyAdminCommercialLoe(
       to: dossierEmail,
       replyTo: customerEmail,
       subject: subjectDossier,
+      text: dossierText,
       html: dossierHtml,
       attachments: billAttachment,
     });
@@ -344,6 +445,7 @@ export async function notifyAdminCommercialLoe(
   if (customerEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)) {
     try {
       const customerHtml = buildCustomerReceiptHtml(record);
+      const customerText = buildCustomerReceiptText(record);
 
       await sendHostingerSmtp({
         fromAddress: DEFAULT_FROM_ADDRESS,
@@ -351,6 +453,7 @@ export async function notifyAdminCommercialLoe(
         to: customerEmail,
         replyTo: DEFAULT_FROM_ADDRESS,
         subject: subjectCustomer,
+        text: customerText,
         html: customerHtml,
       });
     } catch (err) {

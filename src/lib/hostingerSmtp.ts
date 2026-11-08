@@ -45,9 +45,15 @@ function buildMimeMessage(opts: SendMailOptions, messageId: string): string {
   const fromName = opts.fromName || DEFAULT_FROM_NAME;
   const fromAddr = opts.fromAddress || DEFAULT_FROM_ADDRESS;
   const toList = Array.isArray(opts.to) ? opts.to.join(", ") : opts.to;
-  const boundary = `----=_Part_${Date.now()}_${Math.random().toString(36).slice(2)}`;
 
-  const headers = [
+  const hasAttachments = Boolean(opts.attachments && opts.attachments.length > 0);
+  const hasHtml = Boolean(opts.html);
+  const hasText = Boolean(opts.text);
+
+  const mixedBoundary = `----=_Part_Mixed_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+  const altBoundary = `----=_Part_Alt_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+
+  const baseHeaders = [
     `From: ${header(fromName)} <${fromAddr}>`,
     `To: ${toList}`,
     opts.replyTo ? `Reply-To: <${opts.replyTo}>` : "",
@@ -55,41 +61,57 @@ function buildMimeMessage(opts: SendMailOptions, messageId: string): string {
     `Date: ${new Date().toUTCString()}`,
     `Message-ID: ${messageId}`,
     "MIME-Version: 1.0",
-    `Content-Type: multipart/mixed; boundary="${boundary}"`,
-    "",
+    "Auto-Submitted: auto-generated",
+    "X-Mailer: Energy Choice US Intake Engine",
   ].filter(Boolean);
 
-  const parts: string[] = [];
+  // If there are attachments, root container is multipart/mixed
+  if (hasAttachments) {
+    baseHeaders.push(`Content-Type: multipart/mixed; boundary="${mixedBoundary}"`, "");
 
-  // Body Part (alternative HTML / text)
-  if (opts.html) {
-    parts.push(
-      `--${boundary}`,
-      'Content-Type: text/html; charset="UTF-8"',
-      "Content-Transfer-Encoding: base64",
-      "",
-      Buffer.from(opts.html, "utf8")
-        .toString("base64")
-        .replace(/.{1,76}/g, "$&\r\n")
-    );
-  } else if (opts.text) {
-    parts.push(
-      `--${boundary}`,
-      'Content-Type: text/plain; charset="UTF-8"',
-      "Content-Transfer-Encoding: base64",
-      "",
-      Buffer.from(opts.text, "utf8")
-        .toString("base64")
-        .replace(/.{1,76}/g, "$&\r\n")
-    );
-  }
+    const parts: string[] = [];
 
-  // Attachments
-  if (opts.attachments && opts.attachments.length > 0) {
-    for (const att of opts.attachments) {
+    // Body container: if both text and html, nest inside multipart/alternative
+    if (hasHtml && hasText) {
+      parts.push(
+        `--${mixedBoundary}`,
+        `Content-Type: multipart/alternative; boundary="${altBoundary}"`,
+        "",
+        `--${altBoundary}`,
+        'Content-Type: text/plain; charset="UTF-8"',
+        "Content-Transfer-Encoding: base64",
+        "",
+        Buffer.from(opts.text!, "utf8").toString("base64").replace(/.{1,76}/g, "$&\r\n"),
+        `--${altBoundary}`,
+        'Content-Type: text/html; charset="UTF-8"',
+        "Content-Transfer-Encoding: base64",
+        "",
+        Buffer.from(opts.html!, "utf8").toString("base64").replace(/.{1,76}/g, "$&\r\n"),
+        `--${altBoundary}--`
+      );
+    } else if (hasHtml) {
+      parts.push(
+        `--${mixedBoundary}`,
+        'Content-Type: text/html; charset="UTF-8"',
+        "Content-Transfer-Encoding: base64",
+        "",
+        Buffer.from(opts.html!, "utf8").toString("base64").replace(/.{1,76}/g, "$&\r\n")
+      );
+    } else {
+      parts.push(
+        `--${mixedBoundary}`,
+        'Content-Type: text/plain; charset="UTF-8"',
+        "Content-Transfer-Encoding: base64",
+        "",
+        Buffer.from(opts.text || "", "utf8").toString("base64").replace(/.{1,76}/g, "$&\r\n")
+      );
+    }
+
+    // Attachment parts
+    for (const att of opts.attachments!) {
       const mime = att.contentType || "application/octet-stream";
       parts.push(
-        `--${boundary}`,
+        `--${mixedBoundary}`,
         `Content-Type: ${mime}; name="${header(att.filename)}"`,
         `Content-Disposition: attachment; filename="${header(att.filename)}"`,
         "Content-Transfer-Encoding: base64",
@@ -97,11 +119,56 @@ function buildMimeMessage(opts: SendMailOptions, messageId: string): string {
         att.base64Content.replace(/.{1,76}/g, "$&\r\n")
       );
     }
+
+    parts.push(`--${mixedBoundary}--`, "");
+    return baseHeaders.join("\r\n") + "\r\n" + parts.join("\r\n");
   }
 
-  parts.push(`--${boundary}--`, "");
+  // No attachments: root container is multipart/alternative (or simple single-part)
+  if (hasHtml && hasText) {
+    baseHeaders.push(`Content-Type: multipart/alternative; boundary="${altBoundary}"`, "");
+    const parts = [
+      `--${altBoundary}`,
+      'Content-Type: text/plain; charset="UTF-8"',
+      "Content-Transfer-Encoding: base64",
+      "",
+      Buffer.from(opts.text!, "utf8").toString("base64").replace(/.{1,76}/g, "$&\r\n"),
+      `--${altBoundary}`,
+      'Content-Type: text/html; charset="UTF-8"',
+      "Content-Transfer-Encoding: base64",
+      "",
+      Buffer.from(opts.html!, "utf8").toString("base64").replace(/.{1,76}/g, "$&\r\n"),
+      `--${altBoundary}--`,
+      "",
+    ];
+    return baseHeaders.join("\r\n") + "\r\n" + parts.join("\r\n");
+  }
 
-  return headers.join("\r\n") + "\r\n" + parts.join("\r\n");
+  if (hasHtml) {
+    baseHeaders.push(
+      'Content-Type: text/html; charset="UTF-8"',
+      "Content-Transfer-Encoding: base64",
+      ""
+    );
+    return (
+      baseHeaders.join("\r\n") +
+      "\r\n" +
+      Buffer.from(opts.html!, "utf8").toString("base64").replace(/.{1,76}/g, "$&\r\n") +
+      "\r\n"
+    );
+  }
+
+  baseHeaders.push(
+    'Content-Type: text/plain; charset="UTF-8"',
+    "Content-Transfer-Encoding: base64",
+    ""
+  );
+  return (
+    baseHeaders.join("\r\n") +
+    "\r\n" +
+    Buffer.from(opts.text || "", "utf8").toString("base64").replace(/.{1,76}/g, "$&\r\n") +
+    "\r\n"
+  );
 }
 
 export async function sendHostingerSmtp(
@@ -234,3 +301,4 @@ export async function sendHostingerSmtp(
     socket.end();
   }
 }
+
