@@ -244,6 +244,12 @@ async function main() {
     "RESEND_FROM_EMAIL",
     "EXECUTION_WEBHOOK_URL",
     "LOE_WEBHOOK_URL",
+    "SMTP_HOST",
+    "SMTP_PORT",
+    "SMTP_SECURE",
+    "SMTP_USER",
+    "SMTP_PASS",
+    "BROKER_DOSSIER_RECIPIENT",
   ]) {
     if (envVars[optionalKey]?.trim()) {
       desiredEnv.push({ key: optionalKey, value: envVars[optionalKey].trim() });
