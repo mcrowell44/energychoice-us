@@ -159,9 +159,9 @@ const TIER1_SUPPLIER_CURVES: Tier1SupplierCurveTemplate[] = [
     provider: "Constellation Energy",
     planPrefix: "Fixed Rate Protection",
     green: 25,
-    delta500: 0.65,
+    delta500: 0.22,
     delta1000: 0.0,
-    delta2000: -0.35,
+    delta2000: -0.18,
     termAdjustments: { 18: 0.05, 24: -0.12, 36: -0.24, 48: -0.18, 60: -0.08, 72: 0.04 },
     cancelByTerm: { 18: 150, 24: 195, 36: 250, 48: 295, 60: 350, 72: 395 },
   },
@@ -170,9 +170,9 @@ const TIER1_SUPPLIER_CURVES: Tier1SupplierCurveTemplate[] = [
     provider: "Direct Energy / NRG",
     planPrefix: "Live Brighter Multi-Year Lock",
     green: 20,
-    delta500: 0.72,
+    delta500: 0.25,
     delta1000: 0.04,
-    delta2000: -0.3,
+    delta2000: -0.16,
     termAdjustments: { 18: -0.06, 24: -0.08, 36: -0.15, 48: -0.05, 60: 0.08, 72: 0.18 },
     cancelByTerm: { 18: 150, 24: 180, 36: 240, 48: 300, 60: 360, 72: 400 },
   },
@@ -181,9 +181,9 @@ const TIER1_SUPPLIER_CURVES: Tier1SupplierCurveTemplate[] = [
     provider: "ENGIE / Inspire Clean Energy",
     planPrefix: "CleanFixed Forward Lock",
     green: 100,
-    delta500: 0.75,
-    delta1000: 0.1,
-    delta2000: -0.28,
+    delta500: 0.28,
+    delta1000: 0.08,
+    delta2000: -0.15,
     termAdjustments: { 18: 0.16, 24: 0.02, 36: -0.18, 48: -0.3, 60: -0.36, 72: -0.32 },
     cancelByTerm: { 18: 175, 24: 200, 36: 275, 48: 325, 60: 375, 72: 425 },
   },
@@ -192,9 +192,9 @@ const TIER1_SUPPLIER_CURVES: Tier1SupplierCurveTemplate[] = [
     provider: "Vistra / Dynegy Energy",
     planPrefix: "Secure Choice Fixed",
     green: 30,
-    delta500: 0.68,
+    delta500: 0.24,
     delta1000: 0.02,
-    delta2000: -0.34,
+    delta2000: -0.18,
     termAdjustments: { 18: 0.0, 24: -0.14, 36: -0.2, 48: -0.12, 60: -0.02, 72: 0.1 },
     cancelByTerm: { 18: 175, 24: 200, 36: 295, 48: 345, 60: 395, 72: 450 },
   },
@@ -203,9 +203,9 @@ const TIER1_SUPPLIER_CURVES: Tier1SupplierCurveTemplate[] = [
     provider: "APG&E",
     planPrefix: "TrueSimple Fixed",
     green: 23,
-    delta500: 0.62,
+    delta500: 0.2,
     delta1000: -0.02,
-    delta2000: -0.38,
+    delta2000: -0.2,
     termAdjustments: { 18: -0.1, 24: -0.06, 36: -0.04, 48: 0.06, 60: 0.16, 72: 0.28 },
     cancelByTerm: { 18: 150, 24: 200, 36: 275, 48: 325, 60: 375, 72: 425 },
   },
@@ -214,9 +214,9 @@ const TIER1_SUPPLIER_CURVES: Tier1SupplierCurveTemplate[] = [
     provider: "NextEra / Gexa Energy",
     planPrefix: "EcoSaver Long-Term Fixed",
     green: 100,
-    delta500: 0.78,
-    delta1000: 0.08,
-    delta2000: -0.26,
+    delta500: 0.28,
+    delta1000: 0.06,
+    delta2000: -0.14,
     termAdjustments: { 18: 0.14, 24: 0.0, 36: -0.16, 48: -0.26, 60: -0.32, 72: -0.35 },
     cancelByTerm: { 18: 175, 24: 200, 36: 295, 48: 350, 60: 395, 72: 450 },
   },
@@ -225,9 +225,9 @@ const TIER1_SUPPLIER_CURVES: Tier1SupplierCurveTemplate[] = [
     provider: "Rhythm Energy",
     planPrefix: "Simpler Renewable Fixed",
     green: 100,
-    delta500: 0.7,
-    delta1000: 0.06,
-    delta2000: -0.3,
+    delta500: 0.26,
+    delta1000: 0.05,
+    delta2000: -0.16,
     termAdjustments: { 18: -0.02, 24: -0.1, 36: -0.14, 48: -0.08, 60: 0.02, 72: 0.14 },
     cancelByTerm: { 18: 160, 24: 200, 36: 260, 48: 320, 60: 380, 72: 420 },
   },
@@ -236,9 +236,9 @@ const TIER1_SUPPLIER_CURVES: Tier1SupplierCurveTemplate[] = [
     provider: "Clearview / Chariot Clean Desk",
     planPrefix: "SolarGuarantee Fixed",
     green: 100,
-    delta500: 0.82,
-    delta1000: 0.12,
-    delta2000: -0.22,
+    delta500: 0.3,
+    delta1000: 0.1,
+    delta2000: -0.12,
     termAdjustments: { 18: 0.18, 24: 0.06, 36: -0.1, 48: -0.2, 60: -0.24, 72: -0.22 },
     cancelByTerm: { 18: 150, 24: 195, 36: 250, 48: 300, 60: 350, 72: 400 },
   },
@@ -274,11 +274,21 @@ function buildTier1PlansByTerm(
     return true;
   });
 
-  // Anchor dynamic multi-term pricing directly off live gathered 18-36m filings when available
+  // Strip out TDSP delivery pass-through so Tier 1 starts strictly from True Energy Cost Rate only
+  const deliveryPassThrough = territory.tdspDeliveryEstimateCents;
+  const toTrueEnergyCost = (bundledOrRawCents: number): number => {
+    const stripped =
+      territory.isTexasErcot && bundledOrRawCents > deliveryPassThrough + 4.8
+        ? bundledOrRawCents - deliveryPassThrough
+        : bundledOrRawCents;
+    return Number(Math.max(5.5, Math.min(10.2, stripped)).toFixed(2));
+  };
+
+  // Anchor dynamic multi-term pricing directly off live gathered energy-only cost rates when available
   let liveAnchor1000 = territory.tier1Base1000Cents;
   if (cleanLive.length >= 3) {
     const sortedRates = cleanLive
-      .map((p) => Number(p.price_kwh1000))
+      .map((p) => toTrueEnergyCost(Number(p.price_kwh1000)))
       .sort((a, b) => a - b);
     const sampleCount = Math.min(5, sortedRates.length);
     const sum = sortedRates
@@ -298,9 +308,17 @@ function buildTier1PlansByTerm(
     const liveForTerm = cleanLive
       .filter((p) => Number(p.term_value) === term)
       .map((p): SparkPlan => {
-        const r500 = applyMilsToCentsRate(Number(p.price_kwh500), tier1Mils);
-        const r1000 = applyMilsToCentsRate(Number(p.price_kwh1000), tier1Mils);
-        const r2000 = applyMilsToCentsRate(Number(p.price_kwh2000), tier1Mils);
+        const rawEnergy1000 = toTrueEnergyCost(Number(p.price_kwh1000));
+        const rawEnergy500 = Number(
+          Math.max(rawEnergy1000 + 0.18, toTrueEnergyCost(Number(p.price_kwh500)) - 0.25).toFixed(2)
+        );
+        const rawEnergy2000 = Number(
+          Math.min(rawEnergy1000 - 0.12, toTrueEnergyCost(Number(p.price_kwh2000))).toFixed(2)
+        );
+
+        const r500 = applyMilsToCentsRate(rawEnergy500, tier1Mils);
+        const r1000 = applyMilsToCentsRate(rawEnergy1000, tier1Mils);
+        const r2000 = applyMilsToCentsRate(rawEnergy2000, tier1Mils);
         const { effectiveRateCents, appliedTierLabel } = interpolateTier1Rate(
           usageKwh,
           r500,
@@ -331,7 +349,7 @@ function buildTier1PlansByTerm(
             },
           ],
           rate_structure_note:
-            "All-In Bundled Fixed Rate (Includes TDU Delivery)",
+            "Fixed Energy Supply Rate (Excludes Utility Delivery & Pass-Through Fees)",
           applied_tier_label: appliedTierLabel,
           est_monthly_bill: computeBill(effectiveRateCents, usageKwh),
           renewable_pct: Math.min(
@@ -403,9 +421,8 @@ function buildTier1PlansByTerm(
           { label: "1,000 kWh", rate_cents: r1000, is_active: activeCol === 1 },
           { label: "2,000 kWh", rate_cents: r2000, is_active: activeCol === 2 },
         ],
-        rate_structure_note: territory.isTexasErcot
-          ? "Calibrated Multi-Year Fixed Rate (Includes TDU Delivery)"
-          : "Fixed Supply Rate (Utility Delivery Per Tariff)",
+        rate_structure_note:
+          "Fixed Energy Supply Rate (Excludes Utility Delivery & Pass-Through Fees)",
         applied_tier_label: appliedTierLabel,
         est_monthly_bill: computeBill(effectiveRateCents, usageKwh),
         renewable_pct: sup.green,

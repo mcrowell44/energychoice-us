@@ -147,11 +147,13 @@ async function runQaSuite() {
     }
   }
   assert(
-    t2Low.plans[0].rate_per_kwh_cents > tierLeadRates.TIER_3 &&
+    t1.plans[0].rate_per_kwh_cents < 10.0 &&
+      t1.plans[0].rate_per_kwh_cents > t2Low.plans[0].rate_per_kwh_cents &&
+      t2Low.plans[0].rate_per_kwh_cents > tierLeadRates.TIER_3 &&
       tierLeadRates.TIER_3 > tierLeadRates.TIER_4 &&
       tierLeadRates.TIER_4 > tierLeadRates.TIER_5 &&
       tierLeadRates.TIER_5 > tierLeadRates.TIER_6,
-    "Live lead rates must monotonically scale down across Tiers 2 -> 3 -> 4 -> 5 -> 6"
+    "Live lead rates must be true energy-only supply rates (<10¢) and monotonically scale down across Tiers 1 -> 2 -> 3 -> 4 -> 5 -> 6"
   );
   console.log(
     `✅ [PASS] Tiers 3–6 Live Reservable Multi-Term Quotes (24-Hr Verify) — T3=${tierLeadRates.TIER_3}¢ | T4=${tierLeadRates.TIER_4}¢ | T5=${tierLeadRates.TIER_5}¢ | T6=${tierLeadRates.TIER_6}¢`
@@ -295,35 +297,35 @@ async function runQaSuite() {
   }
   console.log("✅ [PASS] Standard Automated Disclosure Verified");
 
-  // 8. Descending 6-Tier Mils Schedule (10, 9, 8, 6, 5, 3) & Client-Bundle Privacy Check
+  // 8. Descending 6-Tier Mils Schedule (10, 8, 7, 5, 4, 3) & Client-Bundle Privacy Check
   assert(
     TIER_MILS_SCHEDULE.TIER_1 === 10 &&
-      TIER_MILS_SCHEDULE.TIER_2 === 9 &&
-      TIER_MILS_SCHEDULE.TIER_3 === 8 &&
-      TIER_MILS_SCHEDULE.TIER_4 === 6 &&
-      TIER_MILS_SCHEDULE.TIER_5 === 5 &&
+      TIER_MILS_SCHEDULE.TIER_2 === 8 &&
+      TIER_MILS_SCHEDULE.TIER_3 === 7 &&
+      TIER_MILS_SCHEDULE.TIER_4 === 5 &&
+      TIER_MILS_SCHEDULE.TIER_5 === 4 &&
       TIER_MILS_SCHEDULE.TIER_6 === 3,
-    "TIER_MILS_SCHEDULE must strictly equal [10, 9, 8, 6, 5, 3]"
+    "TIER_MILS_SCHEDULE must strictly equal [10, 8, 7, 5, 4, 3]"
   );
   assert(
     getMilsForMonthlyKwh(1000).mils === 10 &&
-      getMilsForMonthlyKwh(10000).mils === 9 &&
-      getMilsForMonthlyKwh(75000).mils === 8 &&
-      getMilsForMonthlyKwh(250000).mils === 6 &&
-      getMilsForMonthlyKwh(750000).mils === 5 &&
+      getMilsForMonthlyKwh(10000).mils === 8 &&
+      getMilsForMonthlyKwh(75000).mils === 7 &&
+      getMilsForMonthlyKwh(250000).mils === 5 &&
+      getMilsForMonthlyKwh(750000).mils === 4 &&
       getMilsForMonthlyKwh(1500000).mils === 3,
-    "getMilsForMonthlyKwh must map each of the 6 tiers to [10, 9, 8, 6, 5, 3]"
+    "getMilsForMonthlyKwh must map each of the 6 tiers to [10, 8, 7, 5, 4, 3]"
   );
   // $0.065/kWh (6.50¢) + 10 mils ($0.010 / 1.00¢) === $0.075/kWh (7.50¢)
   assert(
     applyMilsToCentsRate(6.5, 10) === 7.5,
     "$0.065/kWh (6.50¢) + 10 mils must equal $0.075/kWh (7.50¢)"
   );
-  const sampleMargin = computeBrokerMarginRevenue(10000, 9, 24);
+  const sampleMargin = computeBrokerMarginRevenue(10000, 8, 24);
   assert(
-    sampleMargin.monthlyMarginDollars === 90 &&
-      sampleMargin.totalTermMarginDollars === 2160,
-    "computeBrokerMarginRevenue must accurately compute monthly ($90) and 24m ($2,160) margin"
+    sampleMargin.monthlyMarginDollars === 80 &&
+      sampleMargin.totalTermMarginDollars === 1920,
+    "computeBrokerMarginRevenue must accurately compute monthly ($80) and 24m ($1,920) margin"
   );
 
   // Ensure client components, shared modules & API responses NEVER expose markup, margin, mils, raw EFL links, or raw basis anchors

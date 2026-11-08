@@ -19,7 +19,7 @@ export function resolveTerritoryByZip(zip: string): {
       iso: "ERCOT",
       isTexasErcot: true,
       tdspDeliveryEstimateCents: 4.35,
-      tier1Base1000Cents: 11.9,
+      tier1Base1000Cents: 7.65,
       tier2CommercialBaseCents: 7.45,
       deskRangeBasis: "6.1¢ – 7.3¢ / kWh",
     };
@@ -30,7 +30,7 @@ export function resolveTerritoryByZip(zip: string): {
       iso: "ERCOT",
       isTexasErcot: true,
       tdspDeliveryEstimateCents: 4.45,
-      tier1Base1000Cents: 12.1,
+      tier1Base1000Cents: 7.75,
       tier2CommercialBaseCents: 7.55,
       deskRangeBasis: "6.2¢ – 7.4¢ / kWh",
     };
@@ -41,7 +41,7 @@ export function resolveTerritoryByZip(zip: string): {
       iso: "ERCOT",
       isTexasErcot: true,
       tdspDeliveryEstimateCents: 4.55,
-      tier1Base1000Cents: 12.3,
+      tier1Base1000Cents: 7.85,
       tier2CommercialBaseCents: 7.65,
       deskRangeBasis: "6.3¢ – 7.6¢ / kWh",
     };
@@ -52,7 +52,7 @@ export function resolveTerritoryByZip(zip: string): {
       iso: "ERCOT",
       isTexasErcot: true,
       tdspDeliveryEstimateCents: 4.75,
-      tier1Base1000Cents: 12.6,
+      tier1Base1000Cents: 8.0,
       tier2CommercialBaseCents: 7.8,
       deskRangeBasis: "6.4¢ – 7.8¢ / kWh",
     };
@@ -63,7 +63,7 @@ export function resolveTerritoryByZip(zip: string): {
       iso: "PJM",
       isTexasErcot: false,
       tdspDeliveryEstimateCents: 0,
-      tier1Base1000Cents: 10.4,
+      tier1Base1000Cents: 8.55,
       tier2CommercialBaseCents: 8.35,
       deskRangeBasis: "6.9¢ – 8.2¢ / kWh",
     };
@@ -74,7 +74,7 @@ export function resolveTerritoryByZip(zip: string): {
       iso: "PJM",
       isTexasErcot: false,
       tdspDeliveryEstimateCents: 0,
-      tier1Base1000Cents: 8.9,
+      tier1Base1000Cents: 7.45,
       tier2CommercialBaseCents: 7.25,
       deskRangeBasis: "5.9¢ – 7.1¢ / kWh",
     };
@@ -85,7 +85,7 @@ export function resolveTerritoryByZip(zip: string): {
       iso: "PJM/MISO",
       isTexasErcot: false,
       tdspDeliveryEstimateCents: 0,
-      tier1Base1000Cents: 9.4,
+      tier1Base1000Cents: 7.95,
       tier2CommercialBaseCents: 7.75,
       deskRangeBasis: "6.4¢ – 7.6¢ / kWh",
     };
@@ -96,7 +96,7 @@ export function resolveTerritoryByZip(zip: string): {
       iso: "NYISO",
       isTexasErcot: false,
       tdspDeliveryEstimateCents: 0,
-      tier1Base1000Cents: 12.8,
+      tier1Base1000Cents: 10.35,
       tier2CommercialBaseCents: 10.15,
       deskRangeBasis: "8.5¢ – 10.1¢ / kWh",
     };
@@ -107,7 +107,7 @@ export function resolveTerritoryByZip(zip: string): {
       iso: "PJM",
       isTexasErcot: false,
       tdspDeliveryEstimateCents: 0,
-      tier1Base1000Cents: 11.6,
+      tier1Base1000Cents: 9.45,
       tier2CommercialBaseCents: 9.25,
       deskRangeBasis: "7.8¢ – 9.1¢ / kWh",
     };
@@ -118,7 +118,7 @@ export function resolveTerritoryByZip(zip: string): {
       iso: "PJM",
       isTexasErcot: false,
       tdspDeliveryEstimateCents: 0,
-      tier1Base1000Cents: 11.1,
+      tier1Base1000Cents: 9.15,
       tier2CommercialBaseCents: 8.95,
       deskRangeBasis: "7.5¢ – 8.8¢ / kWh",
     };
@@ -129,7 +129,7 @@ export function resolveTerritoryByZip(zip: string): {
       iso: "ISO-NE",
       isTexasErcot: false,
       tdspDeliveryEstimateCents: 0,
-      tier1Base1000Cents: 14.4,
+      tier1Base1000Cents: 12.15,
       tier2CommercialBaseCents: 11.95,
       deskRangeBasis: "10.2¢ – 11.8¢ / kWh",
     };
@@ -140,7 +140,7 @@ export function resolveTerritoryByZip(zip: string): {
     iso: "NATIONAL",
     isTexasErcot: false,
     tdspDeliveryEstimateCents: 0,
-    tier1Base1000Cents: 11.2,
+    tier1Base1000Cents: 8.65,
     tier2CommercialBaseCents: 8.45,
     deskRangeBasis: "6.8¢ – 8.3¢ / kWh",
   };
