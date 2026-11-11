@@ -466,8 +466,88 @@ async function runQaSuite() {
   console.log(
     `✅ [PASS] Step-Gated Bill Upload -> LOE, Agreement Execution & Sign Verified (${t1BillLoeJson.record.confirmationId})\n`
   );
+
+  // 11. Multi-Site Addresses & Multiple Utility Bills Verification
+  const multiSiteRes = await submitLoeHandler(
+    new Request("http://localhost/api/submit-loe", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        zipCode: "75149",
+        territory: "ONCOR NORTH",
+        monthlyKwh: 25000,
+        businessName: "Lone Star Logistics & Storage LLC",
+        authorizedSignerName: "Marcus Crowell",
+        signerTitle: "Managing Principal",
+        contactEmail: "marcus@cdmweb.store",
+        contactPhone: "2145550140",
+        siteAddresses: [
+          {
+            street: "1200 Commerce St",
+            suiteOrUnit: "Bldg A",
+            city: "Mesquite",
+            state: "TX",
+            zip: "75149",
+            meterOrEsiId: "10443720000000001",
+            monthlyKwh: 12000,
+            label: "Primary Distribution Hub",
+          },
+          {
+            street: "450 Industrial Blvd",
+            city: "Dallas",
+            state: "TX",
+            zip: "75207",
+            meterOrEsiId: "10443720000000002",
+            monthlyKwh: 8000,
+            label: "West Annex Facility",
+          },
+          {
+            street: "880 Airport Fwy",
+            city: "Fort Worth",
+            state: "TX",
+            zip: "76115",
+            meterOrEsiId: "10443720000000003",
+            monthlyKwh: 5000,
+            label: "Cross-Dock Terminal",
+          },
+        ],
+        billFiles: [
+          {
+            name: "mesquite_hub_statement.pdf",
+            type: "application/pdf",
+            sizeBytes: 1540,
+            base64: samplePdfBase64,
+            siteLabel: "Primary Distribution Hub",
+          },
+          {
+            name: "dallas_annex_statement.pdf",
+            type: "application/pdf",
+            sizeBytes: 1420,
+            base64: samplePdfBase64,
+            siteLabel: "West Annex Facility",
+          },
+        ],
+        loeSigned: true,
+        loeSignature: "Marcus Crowell",
+      }),
+    })
+  );
+  const multiSiteJson = await multiSiteRes.json();
+  assert(
+    multiSiteRes.status === 200 &&
+      multiSiteJson.record?.confirmationId?.startsWith("EC-24HR-") &&
+      multiSiteJson.record?.billFilesCount === 2 &&
+      multiSiteJson.record?.siteAddressesCount === 3 &&
+      Array.isArray(multiSiteJson.record?.savedBillPaths) &&
+      multiSiteJson.record.savedBillPaths.length === 2,
+    "Multi-Site LOE submission must accept and archive multiple bills and multiple service locations"
+  );
   console.log(
-    "🎉 All 6 Usage Tiers, Mils Schedule, Texas Cities & Bill-Gated LOE Execution Verified!"
+    `✅ [PASS] Multi-Site Addresses (3 locations) & Multiple Bills (2 files) Verified (${multiSiteJson.record.confirmationId})\n`
+  );
+
+  console.log(
+    "🎉 All 6 Usage Tiers, Mils Schedule, Texas Cities, Multi-Site & Multi-Bill LOE Execution Verified!"
   );
 }
 

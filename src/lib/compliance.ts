@@ -204,6 +204,27 @@ export interface Tier1ProspectPayload {
   status: "PROSPECT_CAPTURED_TIER1";
 }
 
+export interface SiteAddressItem {
+  id: string;
+  street: string;
+  suiteOrUnit?: string;
+  city: string;
+  state: string;
+  zip: string;
+  meterOrEsiId?: string;
+  monthlyKwh?: number;
+  label?: string;
+}
+
+export interface UploadedBillItem {
+  id: string;
+  name: string;
+  type: string;
+  sizeBytes: number;
+  base64?: string;
+  siteLabel?: string;
+}
+
 export interface CommercialLoePayload {
   flow: "TIER2_REALTIME_LOE" | "CUSTOM_24HR_LOE";
   tierId: UsageTierId;
@@ -227,6 +248,8 @@ export interface CommercialLoePayload {
   contactEmail: string;
   contactPhone: string;
   currentProvider?: string;
+  siteAddresses?: SiteAddressItem[];
+  billFiles?: UploadedBillItem[];
   billFileName: string;
   billMimeType: string;
   billFileSizeBytes: number;
@@ -243,6 +266,7 @@ export type ExecutionRecord =
   | (Omit<CommercialLoePayload, "billBase64"> & {
     confirmationId: string;
     savedBillPath?: string;
+    savedBillPaths?: string[];
   });
 
 /**

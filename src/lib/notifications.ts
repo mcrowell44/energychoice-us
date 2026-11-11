@@ -12,6 +12,7 @@ import {
   DEFAULT_FROM_ADDRESS,
   DEFAULT_FROM_NAME,
   sendHostingerSmtp,
+  type EmailAttachment,
 } from "./hostingerSmtp";
 
 export function resolveAdminEmail(): string {
@@ -38,18 +39,36 @@ function buildCustomerReceiptText(
     ? (record.selectedRateCents / 100).toFixed(4)
     : "—";
 
+  const sitesText =
+    record.siteAddresses && record.siteAddresses.length > 0
+      ? [
+          ``,
+          `SERVICE LOCATIONS (${record.siteAddresses.length} Location${record.siteAddresses.length > 1 ? "s" : ""}):`,
+          ...record.siteAddresses.map(
+            (s, i) =>
+              `  [${i + 1}] ${s.label || `Location ${i + 1}`}: ${s.street}${s.suiteOrUnit ? ` Ste/Unit ${s.suiteOrUnit}` : ""}, ${s.city}, ${s.state} ${s.zip}${s.meterOrEsiId ? ` (ESI/Meter: ${s.meterOrEsiId})` : ""}${s.monthlyKwh ? ` • ${s.monthlyKwh.toLocaleString()} kWh/mo` : ""}`
+          ),
+        ]
+      : [];
+
+  const billsSummary =
+    record.billFiles && record.billFiles.length > 1
+      ? `${record.billFiles.length} Utility Bills Attached (${record.billFiles.map((b) => b.name).join(", ")})`
+      : record.billFileName;
+
   return [
     `ENERGY CHOICE US — OFFICIAL CONFIRMATION RECEIPT`,
     `Confirmation ID: ${record.confirmationId}`,
     `------------------------------------------------------------`,
     `Business Name:         ${record.businessName}`,
     `Authorized Signer:     ${record.authorizedSignerName} (${record.signerTitle})`,
-    `Service Territory:     ${record.territory} (ZIP ${record.zipCode})`,
+    `Primary Service Area:  ${record.territory} (ZIP ${record.zipCode})`,
     `Annual Usage Tier:     ${record.tierRangeLabel}`,
     `Selected Provider:     ${record.selectedProvider || "Custom 24-Hr Bidding Desk"}`,
     `Contract Term:         ${record.selectedTermMonths ? `${record.selectedTermMonths} Months` : "Multi-Term Bidding"}`,
     `Fixed Energy Rate:     $${rateDollars}/kWh (${record.selectedRateCents ? `${record.selectedRateCents.toFixed(2)}¢` : "Pending"})`,
-    `Uploaded Bill:         ${record.billFileName}`,
+    `Attached Bills:        ${billsSummary}`,
+    ...sitesText,
     `Status:                ${isRealtime ? "Rate Lock & LOE Executed" : "Rate Quote Reserved • 24-Hr Validation Active"}`,
     ``,
     `NEXT STEPS:`,
@@ -74,6 +93,40 @@ function buildCustomerReceiptHtml(
   const rateDollars = record.selectedRateCents
     ? (record.selectedRateCents / 100).toFixed(4)
     : "—";
+
+  const billsHtml =
+    record.billFiles && record.billFiles.length > 1
+      ? `<div style="font-size: 12px; color: #00e5ff; font-family: monospace;">${record.billFiles.length} Bills Attached: ${record.billFiles.map((b) => b.name).join(", ")}</div>`
+      : `<div style="font-size: 12px; color: #00e5ff; font-family: monospace;">${record.billFileName}</div>`;
+
+  const sitesSectionHtml =
+    record.siteAddresses && record.siteAddresses.length > 0
+      ? `
+        <div style="margin-top: 20px; border-top: 1px solid #0e2d5c; padding-top: 14px;">
+          <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #00e5ff; font-weight: bold; margin-bottom: 8px;">
+            Service Locations (${record.siteAddresses.length} Location${record.siteAddresses.length > 1 ? "s" : ""})
+          </div>
+          <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+            ${record.siteAddresses
+              .map(
+                (s, i) => `
+                <tr style="border-bottom: 1px solid #071938;">
+                  <td style="padding: 6px 0; color: #94a3b8; width: 25%;">[${i + 1}] ${s.label || `Location ${i + 1}`}</td>
+                  <td style="padding: 6px 0; color: #ffffff; font-weight: 500;">
+                    ${s.street}${s.suiteOrUnit ? ` Ste/Unit ${s.suiteOrUnit}` : ""}, ${s.city}, ${s.state} ${s.zip}
+                    ${s.meterOrEsiId ? `<span style="color: #38bdf8; font-family: monospace; margin-left: 8px;">(ESI/Meter: ${s.meterOrEsiId})</span>` : ""}
+                  </td>
+                  <td style="padding: 6px 0; color: #00e5ff; text-align: right; font-family: monospace;">
+                    ${s.monthlyKwh ? `${s.monthlyKwh.toLocaleString()} kWh/mo` : ""}
+                  </td>
+                </tr>
+              `
+              )
+              .join("")}
+          </table>
+        </div>
+      `
+      : "";
 
   return `
 <!DOCTYPE html>
@@ -103,7 +156,7 @@ function buildCustomerReceiptHtml(
     <p style="font-size: 14px; color: #cbd5e1; line-height: 1.6;">
       Dear ${record.authorizedSignerName},<br><br>
       Thank you for submitting your commercial energy procurement application for <strong>${record.businessName}</strong>. 
-      Your electric utility bill (<code>${record.billFileName}</code>) and signed Letter of Exclusivity (LOE) have been securely logged.
+      Your electric utility bill package and signed Letter of Exclusivity (LOE) have been securely logged.
     </p>
 
     <div class="grid">
@@ -124,14 +177,20 @@ function buildCustomerReceiptHtml(
         <div class="cell-val">${record.tierRangeLabel}</div>
       </div>
       <div class="row">
-        <div class="cell-label">Service Territory</div>
+        <div class="cell-label">Primary Territory</div>
         <div class="cell-val">${record.territory}</div>
       </div>
       <div class="row">
         <div class="cell-label">Authorized Signer</div>
         <div class="cell-val">${record.authorizedSignerName} (${record.signerTitle})</div>
       </div>
+      <div class="row">
+        <div class="cell-label">Attached Utility Bill(s)</div>
+        <div class="cell-val">${billsHtml}</div>
+      </div>
     </div>
+
+    ${sitesSectionHtml}
 
     <div class="highlight-box">
       <strong>Next Steps:</strong><br>
@@ -169,6 +228,31 @@ function buildBrokerDossierText(
     ? (rawCommercialCents / 100).toFixed(4)
     : "—";
 
+  const sitesText =
+    record.siteAddresses && record.siteAddresses.length > 0
+      ? [
+          ``,
+          `SERVICE LOCATIONS & METERS (${record.siteAddresses.length} Location${record.siteAddresses.length > 1 ? "s" : ""}):`,
+          ...record.siteAddresses.map(
+            (s, i) =>
+              `  [Location ${i + 1}: ${s.label || `Site ${i + 1}`}]
+   Address:     ${s.street}${s.suiteOrUnit ? ` Ste/Unit ${s.suiteOrUnit}` : ""}, ${s.city}, ${s.state} ${s.zip}
+   Meter / ESI: ${s.meterOrEsiId || "Refer to Attached Bill"}
+   Est. Volume: ${s.monthlyKwh ? `${s.monthlyKwh.toLocaleString()} kWh/mo` : "Pro-rated"}`
+          ),
+        ]
+      : [];
+
+  const billsSummary =
+    record.billFiles && record.billFiles.length > 0
+      ? record.billFiles
+          .map(
+            (b, i) =>
+              `  [${i + 1}] ${b.name} (${Math.round(b.sizeBytes / 1024)} KB)${b.siteLabel ? ` • ${b.siteLabel}` : ""}`
+          )
+          .join("\n")
+      : `  [1] ${record.billFileName} (${Math.round(record.billFileSizeBytes / 1024)} KB)`;
+
   return [
     `BROKER INTAKE DOSSIER — CONFIDENTIAL CORPORATE AUDIT`,
     `Confirmation ID: ${record.confirmationId}`,
@@ -179,11 +263,12 @@ function buildBrokerDossierText(
     `Authorized Signer:   ${record.authorizedSignerName} (${record.signerTitle})`,
     `Contact Email:       ${record.contactEmail}`,
     `Contact Phone:       ${record.contactPhone}`,
-    `Service Location:    ZIP ${record.zipCode} • ${record.territory}`,
+    `Primary Location:    ZIP ${record.zipCode} • ${record.territory}`,
     `Current Provider:    ${record.currentProvider || "Not Specified"}`,
     `Monthly Volume:      ${record.monthlyKwh.toLocaleString()} kWh/mo (${record.annualizedKwh.toLocaleString()} kWh/yr)`,
     `Usage Tier:          ${record.commercialTierLabel}`,
     `SLA / Flow:          ${record.turnaroundSla === "REAL_TIME" ? "Real-Time Automatic Lock" : "24-Hour Pricing & Usage Validation"}`,
+    ...sitesText,
     ``,
     `2. RATE QUOTE & SELECTED TERMS`,
     `Selected Supplier:   ${record.selectedProvider || "Custom 24-Hr Desk"}`,
@@ -203,7 +288,8 @@ function buildBrokerDossierText(
     `E-Signature:         ${record.loeSignature}`,
     `Signer Initials:     ${record.loeSignerInitials}`,
     `LOE Checkbox:        VERIFIED & EXECUTED ✓`,
-    `Attached Bill:       ${record.billFileName} (${Math.round(record.billFileSizeBytes / 1024)} KB)`,
+    `Attached Utility Bills:`,
+    billsSummary,
     `------------------------------------------------------------`,
   ].join("\n");
 }
@@ -227,6 +313,47 @@ function buildBrokerDossierHtml(
   const rawDollars = rawCommercialCents
     ? (rawCommercialCents / 100).toFixed(4)
     : "—";
+
+  const sitesSectionHtml =
+    record.siteAddresses && record.siteAddresses.length > 0
+      ? `
+        <div class="section-title">1.1 Service Locations & Meters (${record.siteAddresses.length})</div>
+        <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px;">
+          <tr style="border-bottom: 1px solid #0e2d5c; color: #94a3b8; text-align: left;">
+            <th style="padding: 6px 0;">Site</th>
+            <th style="padding: 6px 0;">Service Address</th>
+            <th style="padding: 6px 0;">ESI ID / Meter</th>
+            <th style="padding: 6px 0; text-align: right;">Est. Monthly</th>
+          </tr>
+          ${record.siteAddresses
+            .map(
+              (s, i) => `
+              <tr style="border-bottom: 1px solid #071938;">
+                <td style="padding: 8px 0; color: #38bdf8; font-weight: bold;">[${i + 1}] ${s.label || `Site ${i + 1}`}</td>
+                <td style="padding: 8px 0; color: #ffffff;">${s.street}${s.suiteOrUnit ? ` Ste/Unit ${s.suiteOrUnit}` : ""}, ${s.city}, ${s.state} ${s.zip}</td>
+                <td style="padding: 8px 0; color: #cbd5e1; font-family: monospace;">${s.meterOrEsiId || "Refer to Bill"}</td>
+                <td style="padding: 8px 0; color: #00e5ff; text-align: right; font-family: monospace;">${s.monthlyKwh ? `${s.monthlyKwh.toLocaleString()} kWh` : "—"}</td>
+              </tr>
+            `
+            )
+            .join("")}
+        </table>
+      `
+      : "";
+
+  const billsListHtml =
+    record.billFiles && record.billFiles.length > 0
+      ? record.billFiles
+          .map(
+            (b, i) => `
+            <div style="padding: 4px 0; font-family: monospace;">
+              📄 [${i + 1}] <strong>${b.name}</strong> (${Math.round(b.sizeBytes / 1024)} KB)
+              ${b.siteLabel ? `<span style="color: #38bdf8; margin-left: 6px;">[${b.siteLabel}]</span>` : ""}
+            </div>
+          `
+          )
+          .join("")
+      : `📄 <strong>${record.billFileName}</strong> (${Math.round(record.billFileSizeBytes / 1024)} KB)`;
 
   return `
 <!DOCTYPE html>
@@ -261,12 +388,14 @@ function buildBrokerDossierHtml(
       <div class="row"><div class="cell-label">Authorized Signer</div><div class="cell-val">${record.authorizedSignerName} (${record.signerTitle})</div></div>
       <div class="row"><div class="cell-label">Contact Email</div><div class="cell-val">${record.contactEmail}</div></div>
       <div class="row"><div class="cell-label">Contact Phone</div><div class="cell-val">${record.contactPhone}</div></div>
-      <div class="row"><div class="cell-label">Service ZIP & Territory</div><div class="cell-val">ZIP ${record.zipCode} • ${record.territory}</div></div>
+      <div class="row"><div class="cell-label">Primary Territory</div><div class="cell-val">ZIP ${record.zipCode} • ${record.territory}</div></div>
       <div class="row"><div class="cell-label">Current Provider</div><div class="cell-val">${record.currentProvider || "Not Specified"}</div></div>
       <div class="row"><div class="cell-label">Monthly / Annual Volume</div><div class="cell-val">${record.monthlyKwh.toLocaleString()} kWh/mo (${record.annualizedKwh.toLocaleString()} kWh/yr)</div></div>
       <div class="row"><div class="cell-label">Annual Usage Tier</div><div class="cell-val">${record.commercialTierLabel}</div></div>
       <div class="row"><div class="cell-label">SLA / Flow</div><div class="cell-val">${record.turnaroundSla === "REAL_TIME" ? "Real-Time Automatic Lock" : "24-Hour Pricing & Usage Validation"}</div></div>
     </div>
+
+    ${sitesSectionHtml}
 
     <div class="section-title">2. Rate Quote & Selected Terms</div>
     <div class="grid">
@@ -296,9 +425,11 @@ function buildBrokerDossierHtml(
     </div>
 
     <div class="att-note">
-      📎 <strong>Attached Electric Utility Bill:</strong><br>
-      File: ${record.billFileName} (${Math.round(record.billFileSizeBytes / 1024)} KB)<br>
-      <em>The complete uploaded bill document has been attached to this email.</em>
+      📎 <strong>Attached Electric Utility Bill Documents:</strong><br>
+      ${billsListHtml}
+      <div style="margin-top: 6px; font-size: 11px; color: #94a3b8;">
+        <em>All uploaded utility bills are attached to this email transmission.</em>
+      </div>
     </div>
   </div>
 </body>
@@ -385,20 +516,30 @@ export async function notifyAdminCommercialLoe(
   const subjectDossier = `[Broker Dossier] ${record.businessName} — ${record.monthlyKwh.toLocaleString()} kWh/mo (${record.tierRangeLabel}) — ${offeredDollars} (+${mils} Mils)`;
   const subjectCustomer = `Your Energy Choice US Confirmation Receipt (${record.confirmationId}) — ${record.businessName}`;
 
-  // Clean Base64 attachment for utility bill
-  const cleanBase64 = record.billBase64
-    ? record.billBase64.replace(/^data:[^;]+;base64,/, "")
-    : undefined;
-
-  const billAttachment = cleanBase64
-    ? [
-        {
-          filename: `${record.confirmationId}_${record.billFileName}`,
-          contentType: record.billMimeType || "application/pdf",
-          base64Content: cleanBase64,
-        },
-      ]
-    : undefined;
+  // Clean Base64 attachments for all utility bills (supporting multiple uploads)
+  const billAttachments: EmailAttachment[] = [];
+  if (record.billFiles && record.billFiles.length > 0) {
+    for (let i = 0; i < record.billFiles.length; i++) {
+      const b = record.billFiles[i];
+      if (b.base64) {
+        const clean = b.base64.replace(/^data:[^;]+;base64,/, "");
+        const safeName = b.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+        billAttachments.push({
+          filename: `${record.confirmationId}_${i + 1}_${safeName}`,
+          contentType: b.type || "application/pdf",
+          base64Content: clean,
+        });
+      }
+    }
+  } else if (record.billBase64) {
+    const cleanBase64 = record.billBase64.replace(/^data:[^;]+;base64,/, "");
+    const safeName = record.billFileName.replace(/[^a-zA-Z0-9._-]/g, "_");
+    billAttachments.push({
+      filename: `${record.confirmationId}_${safeName}`,
+      contentType: record.billMimeType || "application/pdf",
+      base64Content: cleanBase64,
+    });
+  }
 
   let emailDispatched = false;
 
@@ -433,7 +574,7 @@ export async function notifyAdminCommercialLoe(
       subject: subjectDossier,
       text: dossierText,
       html: dossierHtml,
-      attachments: billAttachment,
+      attachments: billAttachments.length > 0 ? billAttachments : undefined,
     });
 
     emailDispatched = true;

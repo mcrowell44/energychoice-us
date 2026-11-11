@@ -138,7 +138,9 @@ export const SignupConfirmationModal: React.FC<
           <div className="rounded-2xl border border-[#0e2d5c] bg-[#010a1a] p-4 space-y-1">
             <div className="text-slate-400">BILL, LOE &amp; E-SIGNATURE</div>
             <div className="text-[#00e5ff] font-bold text-sm truncate">
-              {record.billFileName}
+              {record.billFiles && record.billFiles.length > 1
+                ? `${record.billFiles.length} Bills Attached (${record.billFiles[0].name} +${record.billFiles.length - 1} more)`
+                : record.billFileName}
             </div>
             <div className="text-slate-300 flex items-center gap-1.5">
               <FileCheck2 className="h-3.5 w-3.5 text-[#00e5ff] shrink-0" />
@@ -147,10 +149,80 @@ export const SignupConfirmationModal: React.FC<
               </span>
             </div>
             <div className="text-cyan-300/90 pt-1">
-              ZIP {record.zipCode} • {record.territory}
+              {record.siteAddresses && record.siteAddresses.length > 1
+                ? `${record.siteAddresses.length} Service Locations • ${record.territory}`
+                : `ZIP ${record.zipCode} • ${record.territory}`}
             </div>
           </div>
         </div>
+
+        {/* Multi-Site Addresses Breakdown (if multiple sites provided) */}
+        {record.siteAddresses && record.siteAddresses.length > 0 && (
+          <div className="rounded-2xl border border-[#0e2d5c] bg-[#010a1a] p-5 space-y-3">
+            <div className="flex items-center justify-between gap-2 border-b border-[#0e2d5c] pb-2 text-xs font-mono">
+              <span className="uppercase tracking-wider text-[#00e5ff] font-semibold">
+                Service Locations &amp; Meters ({record.siteAddresses.length})
+              </span>
+              <span className="text-slate-400">
+                Included in LOE Verification
+              </span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono">
+              {record.siteAddresses.map((site, idx) => (
+                <div
+                  key={site.id || idx}
+                  className="rounded-xl border border-[#0e2d5c]/80 bg-[#031129]/80 p-3 space-y-1"
+                >
+                  <div className="flex items-center justify-between text-[#00e5ff] font-bold">
+                    <span>
+                      [{idx + 1}] {site.label || `Location ${idx + 1}`}
+                    </span>
+                    {site.monthlyKwh && (
+                      <span className="text-cyan-300">
+                        {site.monthlyKwh.toLocaleString()} kWh/mo
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-white font-medium">
+                    {site.street}
+                    {site.suiteOrUnit ? ` Ste/Unit ${site.suiteOrUnit}` : ""}
+                  </div>
+                  <div className="text-slate-400">
+                    {site.city}, {site.state} {site.zip}
+                  </div>
+                  {site.meterOrEsiId && (
+                    <div className="text-sky-300 text-[11px] pt-0.5">
+                      ESI ID / Meter: {site.meterOrEsiId}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Multi-Bill Files Breakdown (if multiple bills attached) */}
+        {record.billFiles && record.billFiles.length > 1 && (
+          <div className="rounded-2xl border border-[#0e2d5c] bg-[#010a1a] p-4 text-xs font-mono space-y-2">
+            <div className="uppercase tracking-wider text-[#00e5ff] font-semibold">
+              Attached Utility Bill Files ({record.billFiles.length})
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {record.billFiles.map((bill, idx) => (
+                <div
+                  key={bill.id || idx}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-cyan-400/30 bg-[#031129] px-3 py-1.5 text-slate-200"
+                >
+                  <FileCheck2 className="h-3.5 w-3.5 text-[#00e5ff]" />
+                  <span>{bill.name}</span>
+                  <span className="text-[10px] text-slate-400">
+                    ({Math.round(bill.sizeBytes / 1024)} KB)
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Next Steps Explanation */}
         <div className="rounded-2xl border border-[#0e2d5c] bg-[#010a1a]/90 p-5 space-y-2">

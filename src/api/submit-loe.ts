@@ -3,6 +3,8 @@ import {
   resolveUsageTier,
   STANDARD_DISCLOSURE,
   type CommercialLoePayload,
+  type SiteAddressItem,
+  type UploadedBillItem,
 } from "../lib/compliance";
 import {
   notifyAdminCommercialLoe,
@@ -19,8 +21,8 @@ const ALLOWED_BILL_TYPES = [
 
 async function archiveCommercialLoeLocally(
   record: CommercialLoePayload & { confirmationId: string }
-): Promise<string | undefined> {
-  if (typeof process === "undefined" || !process.versions?.node) return undefined;
+): Promise<{ savedBillPath?: string; savedBillPaths?: string[] }> {
+  if (typeof process === "undefined" || !process.versions?.node) return {};
   try {
     const fs = await import("node:fs/promises");
     const path = await import("node:path");
@@ -28,8 +30,24 @@ async function archiveCommercialLoeLocally(
     const billsDir = path.join(dataDir, "uploaded-bills");
     await fs.mkdir(billsDir, { recursive: true });
 
-    let savedBillPath: string | undefined;
-    if (record.billBase64) {
+    const savedBillPaths: string[] = [];
+
+    // Save all multiple uploaded bill files
+    if (record.billFiles && record.billFiles.length > 0) {
+      for (let i = 0; i < record.billFiles.length; i++) {
+        const item = record.billFiles[i];
+        if (item.base64) {
+          const clean = item.base64.replace(/^data:[^;]+;base64,/, "");
+          const safeName = item.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+          const targetPath = path.join(
+            billsDir,
+            `${record.confirmationId}_${i + 1}_${safeName}`
+          );
+          await fs.writeFile(targetPath, Buffer.from(clean, "base64"));
+          savedBillPaths.push(targetPath);
+        }
+      }
+    } else if (record.billBase64) {
       const cleanBase64 = record.billBase64.replace(
         /^data:[^;]+;base64,/,
         ""
@@ -40,8 +58,10 @@ async function archiveCommercialLoeLocally(
         `${record.confirmationId}_${safeName}`
       );
       await fs.writeFile(fullBillPath, Buffer.from(cleanBase64, "base64"));
-      savedBillPath = fullBillPath;
+      savedBillPaths.push(fullBillPath);
     }
+
+    const savedBillPath = savedBillPaths[0];
 
     const ledgerPath = path.join(dataDir, "commercial-loe-leads.json");
     let existing: unknown[] = [];
@@ -53,13 +73,20 @@ async function archiveCommercialLoeLocally(
       existing = [];
     }
 
-    const { billBase64: _omitted, ...metadataRecord } = record;
+    const { billBase64: _omitted, billFiles: rawBillFiles, ...metadataRecord } = record;
     void _omitted;
-    existing.unshift({ ...metadataRecord, savedBillPath });
+    // Strip heavy base64 strings before writing JSON ledger
+    const strippedBillFiles = rawBillFiles?.map(({ base64: _b64, ...rest }) => rest);
+    existing.unshift({
+      ...metadataRecord,
+      billFiles: strippedBillFiles,
+      savedBillPath,
+      savedBillPaths,
+    });
     await fs.writeFile(ledgerPath, JSON.stringify(existing, null, 2), "utf-8");
-    return savedBillPath;
+    return { savedBillPath, savedBillPaths };
   } catch {
-    return undefined;
+    return {};
   }
 }
 
@@ -83,6 +110,75 @@ export default async function handler(req: Request): Promise<Response> {
     const contactEmail = String(body.contactEmail ?? "").trim();
     const contactPhone = String(body.contactPhone ?? "").trim();
     const currentProvider = String(body.currentProvider ?? "").trim();
+
+    // Parse Multiple Site Addresses (if provided)
+    const rawSites = Array.isArray(body.siteAddresses) ? body.siteAddresses : [];
+    const siteAddresses: SiteAddressItem[] = rawSites
+      .map((s: any, idx: number) => ({
+        id: String(s.id || `site-${idx + 1}`),
+        street: String(s.street ?? "").trim(),
+        suiteOrUnit: s.suiteOrUnit ? String(s.suiteOrUnit).trim() : undefined,
+        city: String(s.city ?? "").trim(),
+        state: String(s.state ?? "TX").trim().toUpperCase() || "TX",
+        zip: String(s.zip ?? "").trim(),
+        meterOrEsiId: s.meterOrEsiId ? String(s.meterOrEsiId).trim() : undefined,
+        monthlyKwh: s.monthlyKwh ? Number(s.monthlyKwh) : undefined,
+        label: s.label ? String(s.label).trim() : `Location ${idx + 1}`,
+      }))
+      .filter((s: SiteAddressItem) => s.street.length > 0 || s.zip.length > 0);
+
+    // Validate additional site address fields if any are present
+    for (const site of siteAddresses) {
+      if (site.zip && !/^\d{5}$/.test(site.zip)) {
+        return new Response(
+          JSON.stringify({
+            error: `Invalid 5-digit ZIP code for site location: ${site.label || site.street || site.zip}`,
+          }),
+          { status: 400, headers: { "Content-Type": "application/json" } }
+        );
+      }
+    }
+
+    // Parse Multiple Bill Uploads (if provided)
+    const rawBillFiles = Array.isArray(body.billFiles) ? body.billFiles : [];
+    let billFiles: UploadedBillItem[] = rawBillFiles
+      .map((b: any, idx: number) => ({
+        id: String(b.id || `bill-${idx + 1}`),
+        name: String(b.name ?? `bill_${idx + 1}.pdf`).trim(),
+        type: String(b.type ?? "application/pdf").trim().toLowerCase(),
+        sizeBytes: Number(b.sizeBytes ?? b.size ?? 0),
+        base64: b.base64 ? String(b.base64) : undefined,
+        siteLabel: b.siteLabel ? String(b.siteLabel).trim() : undefined,
+      }))
+      .filter((b: UploadedBillItem) => Boolean(b.base64));
+
+    // Fallback: If billFiles array not sent or empty, adopt single bill fields
+    const singleBillName = String(body.billFileName ?? "").trim();
+    const singleBillMime = String(body.billMimeType ?? "").trim().toLowerCase();
+    const singleBillSize = Number(body.billFileSizeBytes ?? 0);
+    const singleBillBase64 = body.billBase64 ? String(body.billBase64) : undefined;
+
+    if (billFiles.length === 0 && singleBillName && singleBillBase64) {
+      billFiles = [
+        {
+          id: "bill-1",
+          name: singleBillName,
+          type: singleBillMime || "application/pdf",
+          sizeBytes: singleBillSize,
+          base64: singleBillBase64,
+        },
+      ];
+    }
+
+    // Consolidated bill attributes for backward compatibility
+    const primaryBill = billFiles[0];
+    const totalBillSizeBytes = billFiles.reduce((acc, b) => acc + (b.sizeBytes || 0), 0) || singleBillSize;
+    const billFileName =
+      billFiles.length > 1
+        ? `${primaryBill?.name || "Utility_Bill.pdf"} (+${billFiles.length - 1} more)`
+        : primaryBill?.name || singleBillName;
+    const billMimeType = primaryBill?.type || singleBillMime || "application/pdf";
+    const billBase64 = primaryBill?.base64 || singleBillBase64;
 
     // Optional selected real-time commercial offer (for Tier 2: 2,000–49,999 kWh/mo)
     const selectedProvider = body.selectedProvider
@@ -108,11 +204,6 @@ export default async function handler(req: Request): Promise<Response> {
       body.estMonthlyBill !== undefined && body.estMonthlyBill !== null
         ? Number(body.estMonthlyBill)
         : undefined;
-
-    const billFileName = String(body.billFileName ?? "").trim();
-    const billMimeType = String(body.billMimeType ?? "").trim().toLowerCase();
-    const billFileSizeBytes = Number(body.billFileSizeBytes ?? 0);
-    const billBase64 = body.billBase64 ? String(body.billBase64) : undefined;
 
     const loeSigned = Boolean(body.loeSigned);
     const loeSignature = String(body.loeSignature ?? "").trim();
@@ -162,33 +253,35 @@ export default async function handler(req: Request): Promise<Response> {
       );
     }
 
-    if (!billFileName || !billBase64) {
+    if (billFiles.length === 0 || !primaryBill?.base64) {
       return new Response(
         JSON.stringify({
           error:
-            "Please attach a recent electric utility bill (PDF, PNG, JPG, or WebP).",
+            "Please attach at least one recent electric utility bill (PDF, PNG, JPG, or WebP).",
         }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
 
-    if (
-      billMimeType &&
-      !ALLOWED_BILL_TYPES.includes(billMimeType) &&
-      !/\.(pdf|png|jpe?g|webp)$/i.test(billFileName)
-    ) {
-      return new Response(
-        JSON.stringify({
-          error: "Utility bill must be a PDF, JPG, PNG, or WebP file.",
-        }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
-      );
+    for (const b of billFiles) {
+      if (
+        b.type &&
+        !ALLOWED_BILL_TYPES.includes(b.type) &&
+        !/\.(pdf|png|jpe?g|webp)$/i.test(b.name)
+      ) {
+        return new Response(
+          JSON.stringify({
+            error: `Utility bill "${b.name}" must be a PDF, JPG, PNG, or WebP file.`,
+          }),
+          { status: 400, headers: { "Content-Type": "application/json" } }
+        );
+      }
     }
 
-    if (billFileSizeBytes > 10 * 1024 * 1024) {
+    if (totalBillSizeBytes > 15 * 1024 * 1024) {
       return new Response(
         JSON.stringify({
-          error: "Utility bill file size must be under 10 MB.",
+          error: "Total utility bill files size must be under 15 MB.",
         }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
@@ -240,9 +333,11 @@ export default async function handler(req: Request): Promise<Response> {
       contactEmail,
       contactPhone,
       currentProvider: currentProvider || undefined,
+      siteAddresses: siteAddresses.length > 0 ? siteAddresses : undefined,
+      billFiles: billFiles.length > 0 ? billFiles : undefined,
       billFileName,
       billMimeType: billMimeType || "application/octet-stream",
-      billFileSizeBytes,
+      billFileSizeBytes: totalBillSizeBytes,
       billBase64,
       loeSigned: true,
       loeSignature,
@@ -260,7 +355,7 @@ export default async function handler(req: Request): Promise<Response> {
         : "LOE_24HR_CUSTOM_QUOTE",
     };
 
-    const savedBillPath = await archiveCommercialLoeLocally(fullRecord);
+    const { savedBillPath, savedBillPaths } = await archiveCommercialLoeLocally(fullRecord);
     const { emailDispatched } = await notifyAdminCommercialLoe(fullRecord);
 
     const hooks = [
@@ -283,13 +378,20 @@ export default async function handler(req: Request): Promise<Response> {
       }
     }
 
-    const { billBase64: _stripped, ...clientSafeRecord } = fullRecord;
+    const { billBase64: _stripped, billFiles: _rawBf, ...clientSafeRecord } = fullRecord;
     void _stripped;
+    void _rawBf;
 
     return new Response(
       JSON.stringify({
         ok: true,
-        record: { ...clientSafeRecord, savedBillPath },
+        record: {
+          ...clientSafeRecord,
+          billFilesCount: billFiles.length,
+          siteAddressesCount: siteAddresses.length,
+          savedBillPath,
+          savedBillPaths,
+        },
         notificationEmail: adminEmail,
         emailDispatched,
         webhookDelivered,
