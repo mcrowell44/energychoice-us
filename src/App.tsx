@@ -101,9 +101,20 @@ export const App: React.FC = () => {
         }),
       });
 
-      const data = await res.json();
+      const text = await res.text();
+      let data: any;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error(
+          res.status >= 500
+            ? "Live pricing desk is currently refreshing market rates. Please try again in a moment."
+            : "Unable to retrieve daily rates. Please try again."
+        );
+      }
+
       if (!res.ok) {
-        throw new Error(data.error || "Unable to retrieve daily rates.");
+        throw new Error(data.error || data.details || "Unable to retrieve daily rates.");
       }
 
       const typedData = data as SparkMatchResponse;

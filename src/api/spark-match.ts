@@ -10,6 +10,7 @@ import {
   type UsageTierId,
 } from "../lib/compliance";
 import { resolveTerritoryByZip } from "../lib/pricingTerritory";
+import { findTexasCityByZip } from "../lib/texasDeregulatedCities";
 import {
   applyMilsToCentsRate,
   getTierMils,
@@ -89,7 +90,7 @@ async function fetchLiveTexasPtcPlans(
 
   try {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 7500);
+    const timer = setTimeout(() => controller.abort(), 2000); // 2.0s fast timeout to prevent Vercel 10s timeout
     const res = await fetch(
       `http://api.powertochoose.org/api/PowerToChoose/plans?zip_code=${encodeURIComponent(
         zipCode
@@ -121,22 +122,11 @@ async function fetchLiveTexasPtcPlans(
 async function fetchTexasPlansWithHubFallback(
   zipCode: string
 ): Promise<PtcRawPlan[] | null> {
-  let liveRaw = await fetchLiveTexasPtcPlans(zipCode);
-  if (!liveRaw || liveRaw.length === 0) {
-    const prefix = parseInt(zipCode.slice(0, 3), 10);
-    const hubZip =
-      prefix >= 750 && prefix <= 769
-        ? "75068"
-        : prefix >= 770 && prefix <= 779
-          ? "77002"
-          : prefix >= 780 && prefix <= 789
-            ? "78401"
-            : "79601";
-    if (hubZip !== zipCode) {
-      liveRaw = await fetchLiveTexasPtcPlans(hubZip);
-    }
+  const liveRaw = await fetchLiveTexasPtcPlans(zipCode);
+  if (liveRaw && liveRaw.length > 0) {
+    return liveRaw;
   }
-  return liveRaw;
+  return null;
 }
 
 interface Tier1SupplierCurveTemplate {
@@ -592,14 +582,10 @@ async function buildLargeCiPlansByTerm(
   plansByTerm: Record<string, SparkPlan[]>;
 }> {
   const territory = resolveTerritoryByZip(zipCode);
-  let liveTduName: string | undefined;
-
-  if (territory.isTexasErcot) {
-    const liveRaw = await fetchTexasPlansWithHubFallback(zipCode);
-    if (liveRaw && liveRaw.length > 0) {
-      liveTduName = liveRaw[0]?.company_tdu_name;
-    }
-  }
+  const cityMatch = findTexasCityByZip(zipCode);
+  const liveTduName =
+    cityMatch?.tdspName ||
+    (territory.isTexasErcot ? "ONCOR ELECTRIC DELIVERY COMPANY" : territory.region);
 
   const todayDrift =
     ((Math.floor(Date.now() / 86_400_000) % 7) - 3) * 0.04;

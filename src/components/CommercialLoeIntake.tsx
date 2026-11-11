@@ -387,7 +387,18 @@ export const CommercialLoeIntake: React.FC<CommercialLoeIntakeProps> = ({
         }),
       });
 
-      const data = await res.json();
+      const text = await res.text();
+      let data: any;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error(
+          res.status >= 500
+            ? "Submission desk is currently processing requests. Please retry in a moment."
+            : "Unable to complete LOE & Agreement Execution."
+        );
+      }
+
       if (!res.ok) {
         throw new Error(
           data.error || "Unable to complete LOE & Agreement Execution."
