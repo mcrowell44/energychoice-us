@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && npm run build-api",
+    "build-api": "esbuild src/api/entrypoints/spark-match.ts --bundle --platform=node --format=esm --target=node20 --outfile=api/spark-match.js && esbuild src/api/entrypoints/execute-agreement.ts --bundle --platform=node --format=esm --target=node20 --outfile=api/execute-agreement.js && esbuild src/api/entrypoints/submit-loe.ts --bundle --platform=node --format=esm --target=node20 --outfile=api/submit-loe.js",
     "preview": "vite preview",
     "export-seed": "npx tsx scripts/exportLiveTier1Seed.ts",
     "pulse": "npx tsx scripts/postMarketPulse.ts",

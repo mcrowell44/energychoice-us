@@ -1,4 +1,4 @@
-import executeAgreementHandler from "../src/api/execute-agreement";
+import executeAgreementHandler from "../execute-agreement";
 
 export default async function handler(req: any, res?: any): Promise<any> {
   // Node.js serverless runtime (req: IncomingMessage, res: ServerResponse)

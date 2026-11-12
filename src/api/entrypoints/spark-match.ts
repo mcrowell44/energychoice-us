@@ -1,4 +1,4 @@
-import sparkMatchHandler from "../src/api/spark-match";
+import sparkMatchHandler from "../spark-match";
 
 export default async function handler(req: any, res?: any): Promise<any> {
   // Node.js serverless runtime (req: IncomingMessage, res: ServerResponse)

@@ -1,4 +1,4 @@
-import submitLoeHandler from "../src/api/submit-loe";
+import submitLoeHandler from "../submit-loe";
 
 export default async function handler(req: any, res?: any): Promise<any> {
   // Node.js serverless runtime (req: IncomingMessage, res: ServerResponse)
